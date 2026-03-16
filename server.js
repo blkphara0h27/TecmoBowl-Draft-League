@@ -8,7 +8,7 @@ const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
 
-// Serve the public folder
+// Serve public folder
 app.use(express.static(path.join(__dirname, "public")))
 
 // Root route
@@ -16,9 +16,9 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"))
 })
 
-// -------------------------
-// LOAD / SAVE DRAFT STATE
-// -------------------------
+/* -------------------------
+   LOAD / SAVE DRAFT STATE
+--------------------------*/
 
 let state = {
   teams: [],
@@ -40,14 +40,16 @@ function loadState() {
 
 loadState()
 
-// -------------------------
-// BUILD SNAKE DRAFT ORDER
-// -------------------------
+/* -------------------------
+   BUILD SNAKE DRAFT ORDER
+--------------------------*/
 
 function buildDraftOrder(teams, rounds = 20) {
+
   let order = []
 
   for (let r = 0; r < rounds; r++) {
+
     let round = [...Array(teams.length).keys()]
 
     if (r % 2 === 1) {
@@ -55,20 +57,23 @@ function buildDraftOrder(teams, rounds = 20) {
     }
 
     order = order.concat(round)
+
   }
 
   return order
 }
 
-// -------------------------
-// SOCKET CONNECTION
-// -------------------------
+/* -------------------------
+   SOCKET.IO
+--------------------------*/
 
 io.on("connection", socket => {
 
+  console.log("User connected")
+
   socket.emit("state", state)
 
-  // Setup draft
+  /* Setup Draft */
   socket.on("setup", data => {
 
     state.teams = data.teams
@@ -79,9 +84,10 @@ io.on("connection", socket => {
     saveState()
 
     io.emit("state", state)
+
   })
 
-  // Draft player
+  /* Draft Player */
   socket.on("draft", player => {
 
     if (state.drafted.includes(player)) return
@@ -91,9 +97,10 @@ io.on("connection", socket => {
     saveState()
 
     io.emit("state", state)
+
   })
 
-  // Undo pick
+  /* Undo Pick */
   socket.on("undo", () => {
 
     state.drafted.pop()
@@ -101,18 +108,19 @@ io.on("connection", socket => {
     saveState()
 
     io.emit("state", state)
+
   })
 
-  // Pause timer
+  /* Pause Timer */
   socket.on("pause", () => {
     io.emit("timer", 0)
   })
 
 })
 
-// -------------------------
-// SERVER START
-// -------------------------
+/* -------------------------
+   START SERVER
+--------------------------*/
 
 const PORT = process.env.PORT || 3000
 
