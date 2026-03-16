@@ -110,7 +110,6 @@ io.on("connection", socket => {
     io.emit("timer", 0)
   })
 
-})
 
 // ----------------------------
 // SERVER START
