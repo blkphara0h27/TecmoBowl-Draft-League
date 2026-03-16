@@ -110,11 +110,11 @@ io.on("connection", socket => {
     io.emit("timer", 0)
   })
 
+})
 
 // ----------------------------
 // SERVER START
 // ----------------------------
-const PORT = process.env.PORT || 3000
-  server.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log("Server running on port " + PORT)
 })
