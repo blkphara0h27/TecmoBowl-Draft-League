@@ -7,93 +7,95 @@ const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
 
-const PORT = process.env.PORT || 3000
-
 app.use(express.static("."))
 
-// ----------------------------
-// LOAD SAVED DRAFT STATE
-// ----------------------------
+// -------------------------
+// LOAD / SAVE DRAFT STATE
+// -------------------------
+
 let state = {
   teams: [],
   players: [],
   drafted: [],
-  draftOrder: [],
-  started: false
+  draftOrder: []
 }
 
-if (fs.existsSync("draft_state.json")) {
-  state = JSON.parse(fs.readFileSync("draft_state.json"))
-}
-
-// ----------------------------
-// SAVE FUNCTION
-// ----------------------------
 function saveState() {
   fs.writeFileSync("draft_state.json", JSON.stringify(state, null, 2))
 }
 
-// ----------------------------
-// CREATE SNAKE DRAFT ORDER
-// ----------------------------
-function createDraftOrder(teamCount, rounds) {
+function loadState() {
+  if (fs.existsSync("draft_state.json")) {
+    state = JSON.parse(fs.readFileSync("draft_state.json"))
+    console.log("Draft state loaded")
+  }
+}
+
+loadState()
+
+// -------------------------
+// BUILD SNAKE DRAFT ORDER
+// -------------------------
+
+function buildDraftOrder(teams, rounds = 20) {
   let order = []
 
   for (let r = 0; r < rounds; r++) {
-    let round = [...Array(teamCount).keys()]
+    let round = [...Array(teams.length).keys()]
 
     if (r % 2 === 1) {
       round.reverse()
     }
 
-    order.push(...round)
+    order = order.concat(round)
   }
 
   return order
 }
 
-// ----------------------------
+// -------------------------
 // SOCKET CONNECTION
-// ----------------------------
+// -------------------------
+
 io.on("connection", socket => {
 
-  // Send current draft state
   socket.emit("state", state)
 
-  // ------------------------
+  // -------------------------
   // SETUP DRAFT
-  // ------------------------
+  // -------------------------
+
   socket.on("setup", data => {
 
     state.teams = data.teams
     state.players = data.players
     state.drafted = []
-
-    const rounds = 20
-    state.draftOrder = createDraftOrder(state.teams.length, rounds)
+    state.draftOrder = buildDraftOrder(data.teams)
 
     saveState()
 
     io.emit("state", state)
   })
 
-  // ------------------------
-  // DRAFT PICK
-  // ------------------------
-  socket.on("draft", name => {
+  // -------------------------
+  // MAKE PICK
+  // -------------------------
 
-    if (!state.players) return
+  socket.on("draft", player => {
 
-    state.drafted.push(name)
+    if (state.drafted.includes(player)) return
+
+    state.drafted.push(player)
 
     saveState()
 
     io.emit("state", state)
   })
 
-  // ------------------------
+  // -------------------------
   // UNDO PICK
-  // ------------------------
+  // -------------------------
+
   socket.on("undo", () => {
 
     state.drafted.pop()
@@ -103,18 +105,19 @@ io.on("connection", socket => {
     io.emit("state", state)
   })
 
-  // ------------------------
+  // -------------------------
   // PAUSE TIMER
-  // ------------------------
+  // -------------------------
+
   socket.on("pause", () => {
     io.emit("timer", 0)
   })
 
 })
 
-// ----------------------------
+// -------------------------
 // SERVER START
-// ----------------------------
+// -------------------------
 
 const PORT = process.env.PORT || 3000
 
