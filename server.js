@@ -2,12 +2,19 @@ const express = require("express")
 const http = require("http")
 const { Server } = require("socket.io")
 const fs = require("fs")
+const path = require("path")
 
 const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
 
-app.use(express.static("."))
+// Serve the public folder
+app.use(express.static(path.join(__dirname, "public")))
+
+// Root route
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"))
+})
 
 // -------------------------
 // LOAD / SAVE DRAFT STATE
@@ -61,10 +68,7 @@ io.on("connection", socket => {
 
   socket.emit("state", state)
 
-  // -------------------------
-  // SETUP DRAFT
-  // -------------------------
-
+  // Setup draft
   socket.on("setup", data => {
 
     state.teams = data.teams
@@ -77,10 +81,7 @@ io.on("connection", socket => {
     io.emit("state", state)
   })
 
-  // -------------------------
-  // MAKE PICK
-  // -------------------------
-
+  // Draft player
   socket.on("draft", player => {
 
     if (state.drafted.includes(player)) return
@@ -92,10 +93,7 @@ io.on("connection", socket => {
     io.emit("state", state)
   })
 
-  // -------------------------
-  // UNDO PICK
-  // -------------------------
-
+  // Undo pick
   socket.on("undo", () => {
 
     state.drafted.pop()
@@ -105,10 +103,7 @@ io.on("connection", socket => {
     io.emit("state", state)
   })
 
-  // -------------------------
-  // PAUSE TIMER
-  // -------------------------
-
+  // Pause timer
   socket.on("pause", () => {
     io.emit("timer", 0)
   })
