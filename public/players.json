@@ -10645,46 +10645,209 @@
   }
   ],
   "teams": [
-  { "name": "Bills", "ol": { "rushingPower": 69, "hittingPower": 55 } },
-  { "name": "Dolphins", "ol": { "rushingPower": 64, "hittingPower": 52 } },
-  { "name": "Patriots", "ol": { "rushingPower": 65, "hittingPower": 58 } },
-  { "name": "Jets", "ol": { "rushingPower": 68, "hittingPower": 60 } },
+{
+  "name": "Jets",
+  "ol": {
+    "rushingPower": 68,
+    "hittingPower": 60
+  }
+},
+{
+  "name": "Ravens",
+  "ol": {
+    "rushingPower": 72,
+    "hittingPower": 66
+  }
+},
+{
+  "name": "Bengals",
+  "ol": {
+    "rushingPower": 67,
+    "hittingPower": 61
+  }
+},
+{
+  "name": "Browns",
+  "ol": {
+    "rushingPower": 63,
+    "hittingPower": 58
+  }
+},
+{
+  "name": "Steelers",
+  "ol": {
+    "rushingPower": 66,
+    "hittingPower": 62
+  }
+},
+{
+  "name": "Texans",
+  "ol": {
+    "rushingPower": 70,
+    "hittingPower": 64
+  }
+},
+{
+  "name": "Colts",
+  "ol": {
+    "rushingPower": 66,
+    "hittingPower": 59
+  }
+},
+{
+  "name": "Jaguars",
+  "ol": {
+    "rushingPower": 62,
+    "hittingPower": 57
+  }
+},
+{
+  "name": "Titans",
+  "ol": {
+    "rushingPower": 68,
+    "hittingPower": 61
+  }
+},
+{
+  "name": "Chiefs",
+  "ol": {
+    "rushingPower": 65,
+    "hittingPower": 60
+  }
+},
+{
+  "name": "Raiders",
+  "ol": {
+    "rushingPower": 67,
+    "hittingPower": 62
+  }
+},
+{
+  "name": "Chargers",
+  "ol": {
+    "rushingPower": 64,
+    "hittingPower": 58
+  }
+},
+{
+  "name": "Broncos",
+  "ol": {
+    "rushingPower": 66,
+    "hittingPower": 59
+  }
+},
+{
+  "name": "Cowboys",
+  "ol": {
+    "rushingPower": 75,
+    "hittingPower": 70
+  }
+},
+{
+  "name": "Giants",
+  "ol": {
+    "rushingPower": 66,
+    "hittingPower": 60
+  }
+},
+{
+  "name": "Eagles",
+  "ol": {
+    "rushingPower": 71,
+    "hittingPower": 66
+  }
+},
+{
+  "name": "Commanders",
+  "ol": {
+    "rushingPower": 65,
+    "hittingPower": 59
+  }
+},
+{
+  "name": "Packers",
+  "ol": {
+    "rushingPower": 72,
+    "hittingPower": 60
+  }
+},
+{
+  "name": "Bears",
+  "ol": {
+    "rushingPower": 64,
+    "hittingPower": 58
+  }
+},
+{
+  "name": "Lions",
+  "ol": {
+    "rushingPower": 74,
+    "hittingPower": 68
+  }
+},
+{
+  "name": "Vikings",
+  "ol": {
+    "rushingPower": 68,
+    "hittingPower": 62
+  }
+},
+{
+  "name": "Saints",
+  "ol": {
+    "rushingPower": 69,
+    "hittingPower": 63
+  }
+},
+{
+  "name": "Falcons",
+  "ol": {
+    "rushingPower": 67,
+    "hittingPower": 61
+  }
+},
+{
+  "name": "Panthers",
+  "ol": {
+    "rushingPower": 66,
+    "hittingPower": 60
+  }
+},
+{
+  "name": "Buccaneers",
+  "ol": {
+    "rushingPower": 65,
+    "hittingPower": 59
+  }
+},
+{
+  "name": "49ers",
+  "ol": {
+    "rushingPower": 73,
+    "hittingPower": 68
+  }
+},
+{
+  "name": "Seahawks",
+  "ol": {
+    "rushingPower": 67,
+    "hittingPower": 61
+  }
+},
+{
+  "name": "Rams",
+  "ol": {
+    "rushingPower": 68,
+    "hittingPower": 62
+  }
+},
+{
+  "name": "Cardinals",
+  "ol": {
+    "rushingPower": 64,
+    "hittingPower": 58
+  }
 
-  { "name": "Ravens", "ol": { "rushingPower": 72, "hittingPower": 66 } },
-  { "name": "Bengals", "ol": { "rushingPower": 67, "hittingPower": 61 } },
-  { "name": "Browns", "ol": { "rushingPower": 63, "hittingPower": 58 } },
-  { "name": "Steelers", "ol": { "rushingPower": 66, "hittingPower": 62 } },
-
-  { "name": "Texans", "ol": { "rushingPower": 70, "hittingPower": 64 } },
-  { "name": "Colts", "ol": { "rushingPower": 66, "hittingPower": 59 } },
-  { "name": "Jaguars", "ol": { "rushingPower": 62, "hittingPower": 57 } },
-  { "name": "Titans", "ol": { "rushingPower": 68, "hittingPower": 61 } },
-
-  { "name": "Chiefs", "ol": { "rushingPower": 65, "hittingPower": 60 } },
-  { "name": "Raiders", "ol": { "rushingPower": 67, "hittingPower": 62 } },
-  { "name": "Chargers", "ol": { "rushingPower": 64, "hittingPower": 58 } },
-  { "name": "Broncos", "ol": { "rushingPower": 66, "hittingPower": 59 } },
-
-  { "name": "Cowboys", "ol": { "rushingPower": 75, "hittingPower": 70 } },
-  { "name": "Giants", "ol": { "rushingPower": 66, "hittingPower": 60 } },
-  { "name": "Eagles", "ol": { "rushingPower": 71, "hittingPower": 66 } },
-  { "name": "Commanders", "ol": { "rushingPower": 65, "hittingPower": 59 } },
-
-  { "name": "Packers", "ol": { "rushingPower": 72, "hittingPower": 60 } },
-  { "name": "Bears", "ol": { "rushingPower": 64, "hittingPower": 58 } },
-  { "name": "Lions", "ol": { "rushingPower": 74, "hittingPower": 68 } },
-  { "name": "Vikings", "ol": { "rushingPower": 68, "hittingPower": 62 } },
-
-  { "name": "Saints", "ol": { "rushingPower": 69, "hittingPower": 63 } },
-  { "name": "Falcons", "ol": { "rushingPower": 67, "hittingPower": 61 } },
-  { "name": "Panthers", "ol": { "rushingPower": 66, "hittingPower": 60 } },
-  { "name": "Buccaneers", "ol": { "rushingPower": 65, "hittingPower": 59 } },
-
-  { "name": "49ers", "ol": { "rushingPower": 73, "hittingPower": 68 } },
-  { "name": "Seahawks", "ol": { "rushingPower": 67, "hittingPower": 61 } },
-  { "name": "Rams", "ol": { "rushingPower": 68, "hittingPower": 62 } },
-  { "name": "Cardinals", "ol": { "rushingPower": 64, "hittingPower": 58 } }
-]
-    }
+ 
   ]
 }
