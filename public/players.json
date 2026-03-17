@@ -10639,5 +10639,32 @@
     "kicking_ability": 50.0,
     "avoid_kick_block": 50.0,
     "sim_kicking_ability": 6.0
-  }
+  },
+  {
+"teams": [
+{
+"name": "Bills",
+"ol": {
+"rushingPower": 69,
+"hittingPower": 55
+}
+},
+{
+"name": "Ravens",
+"ol": {
+"rushingPower": 69,
+"hittingPower": 64
+}
+},
+{
+"name": "Saints",
+"ol": {
+"rushingPower": 69,
+"hittingPower": 61
+}
+}
 ]
+}
+
+  
+
