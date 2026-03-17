@@ -30,11 +30,11 @@ function loadData(){
     players = data.players || data
     teamsData = data.teams || []
 
-    console.log("Players:", players.length)
-    console.log("Teams:", teamsData.length)
+    console.log("Players loaded:", players.length)
+    console.log("Teams loaded:", teamsData.length)
 
   }catch(e){
-    console.error("PLAYERS LOAD ERROR", e)
+    console.error("LOAD DATA ERROR:", e)
   }
 }
 
@@ -55,7 +55,7 @@ function loadDraft(){
       console.log("Draft restored ✅")
     }
   }catch(e){
-    console.error("LOAD ERROR", e)
+    console.error("LOAD DRAFT ERROR:", e)
   }
 }
 
@@ -74,11 +74,11 @@ function saveDraft(){
 
     console.log("Saved ✅")
   }catch(e){
-    console.error("SAVE ERROR", e)
+    console.error("SAVE ERROR:", e)
   }
 }
 
-/* ---------- SNAKE ---------- */
+/* ---------- SNAKE ORDER ---------- */
 
 function snakeOrder(teamCount, rounds){
   let order=[]
@@ -131,16 +131,16 @@ function autoPick(){
 
 io.on("connection", socket => {
 
-  console.log("Client connected")
+  console.log("Client connected ✅")
 
   socket.emit("state",{teams,players,drafted,currentPick,draftOrder,teamsData})
 
   socket.on("setup", data => {
 
-    console.log("SETUP:", data)
+    console.log("SETUP RECEIVED:", data)
 
     if(!data || !data.teams || data.teams.length < 2){
-      console.log("Invalid teams input")
+      console.log("Invalid team input ❌")
       return
     }
 
@@ -184,6 +184,8 @@ io.on("connection", socket => {
   socket.on("pause", () => clearInterval(interval))
 
 })
+
+/* ---------- START ---------- */
 
 const PORT = process.env.PORT || 3000
 
