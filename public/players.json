@@ -1,5 +1,8 @@
-[
-  {
+{
+  "players": [
+    {
+      
+  
     "position": "QB",
     "team": "Packers",
     "name": "Aaron Rodgers",
@@ -10004,8 +10007,8 @@
     "position": "K",
     "team": "Raiders",
     "name": "S. Janikowski",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 81.0,
     "avoid_kick_block": 81.0,
     "sim_kicking_ability": 12.0
@@ -10014,8 +10017,8 @@
     "position": "K",
     "team": "Jaguars",
     "name": "Josh Scobee",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 75.0,
     "avoid_kick_block": 75.0,
     "sim_kicking_ability": 11.0
@@ -10024,8 +10027,8 @@
     "position": "K",
     "team": "Bears",
     "name": "Robbie Gould",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 75.0,
     "avoid_kick_block": 75.0,
     "sim_kicking_ability": 11.0
@@ -10034,8 +10037,8 @@
     "position": "K",
     "team": "Titans",
     "name": "Rob Bironas",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 69.0,
     "avoid_kick_block": 75.0,
     "sim_kicking_ability": 10.0
@@ -10044,8 +10047,8 @@
     "position": "K",
     "team": "49ers",
     "name": "David Akers",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 69.0,
     "avoid_kick_block": 50.0,
     "sim_kicking_ability": 10.0
@@ -10054,8 +10057,8 @@
     "position": "K",
     "team": "Bills",
     "name": "Rian Lindell",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 63.0,
     "avoid_kick_block": 56.0,
     "sim_kicking_ability": 9.0
@@ -10064,8 +10067,8 @@
     "position": "K",
     "team": "Patriots",
     "name": "S. Gostkowski",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 63.0,
     "avoid_kick_block": 56.0,
     "sim_kicking_ability": 9.0
@@ -10074,8 +10077,8 @@
     "position": "K",
     "team": "Colts",
     "name": "Adam Vinatieri",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 63.0,
     "avoid_kick_block": 50.0,
     "sim_kicking_ability": 9.0
@@ -10084,8 +10087,8 @@
     "position": "K",
     "team": "Eagles",
     "name": "Alex Henery",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 63.0,
     "avoid_kick_block": 63.0,
     "sim_kicking_ability": 9.0
@@ -10094,8 +10097,8 @@
     "position": "K",
     "team": "Packers",
     "name": "Mason Crosby",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 63.0,
     "avoid_kick_block": 75.0,
     "sim_kicking_ability": 9.0
@@ -10104,8 +10107,8 @@
     "position": "K",
     "team": "Buccaneers",
     "name": "Connor Barth",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 63.0,
     "avoid_kick_block": 69.0,
     "sim_kicking_ability": 9.0
@@ -10114,8 +10117,8 @@
     "position": "K",
     "team": "Falcons",
     "name": "Matt Bryant",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 63.0,
     "avoid_kick_block": 56.0,
     "sim_kicking_ability": 9.0
@@ -10124,8 +10127,8 @@
     "position": "K",
     "team": "Dolphins",
     "name": "Dan Carpenter",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 56.0,
     "avoid_kick_block": 50.0,
     "sim_kicking_ability": 7.0
@@ -10134,8 +10137,8 @@
     "position": "K",
     "team": "Jets",
     "name": "Nick Folk",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 56.0,
     "avoid_kick_block": 63.0,
     "sim_kicking_ability": 7.0
@@ -10144,8 +10147,8 @@
     "position": "K",
     "team": "Bengals",
     "name": "Mike Nugent",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 56.0,
     "avoid_kick_block": 50.0,
     "sim_kicking_ability": 7.0
@@ -10154,8 +10157,8 @@
     "position": "K",
     "team": "Browns",
     "name": "Phil Dawson",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 56.0,
     "avoid_kick_block": 25.0,
     "sim_kicking_ability": 7.0
@@ -10164,8 +10167,8 @@
     "position": "K",
     "team": "Chargers",
     "name": "Nate Kaeding",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 56.0,
     "avoid_kick_block": 56.0,
     "sim_kicking_ability": 7.0
@@ -10174,8 +10177,8 @@
     "position": "K",
     "team": "Ravens",
     "name": "Justin Tucker",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 50.0,
     "avoid_kick_block": 50.0,
     "sim_kicking_ability": 6.0
@@ -10184,8 +10187,8 @@
     "position": "K",
     "team": "Broncos",
     "name": "Matt Prater",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 50.0,
     "avoid_kick_block": 38.0,
     "sim_kicking_ability": 6.0
@@ -10194,8 +10197,8 @@
     "position": "K",
     "team": "Chiefs",
     "name": "Ryan Succop",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "&running_speed": 56.0,
+    "& hitting_power": 31.0,
     "kicking_ability": 50.0,
     "avoid_kick_block": 25.0,
     "sim_kicking_ability": 6.0
@@ -10204,8 +10207,8 @@
     "position": "K",
     "team": "Cowboys",
     "name": "Dan Bailey",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 56.0,
+    "hitting_power": 31.0,
     "kicking_ability": 50.0,
     "avoid_kick_block": 50.0,
     "sim_kicking_ability": 6.0
@@ -10214,8 +10217,8 @@
     "position": "K",
     "team": "Texans",
     "name": "Shayne Graham",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 56.0,
+    "hitting_power": 31.0,
     "kicking_ability": 44.0,
     "avoid_kick_block": 44.0,
     "sim_kicking_ability": 5.0
@@ -10224,8 +10227,8 @@
     "position": "K",
     "team": "Lions",
     "name": "Jason Hanson",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 56.0,
+    "hitting_power": 31.0,
     "kicking_ability": 44.0,
     "avoid_kick_block": 56.0,
     "sim_kicking_ability": 5.0
@@ -10234,8 +10237,8 @@
     "position": "K",
     "team": "Saints",
     "name": "Garrett Hartley",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 56.0,
+    "hitting_power": 31.0,
     "kicking_ability": 44.0,
     "avoid_kick_block": 44.0,
     "sim_kicking_ability": 5.0
@@ -10244,8 +10247,8 @@
     "position": "K",
     "team": "Panthers",
     "name": "Justin Medlock",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 56.0,
+    "hitting_power": 31.0,
     "kicking_ability": 44.0,
     "avoid_kick_block": 50.0,
     "sim_kicking_ability": 5.0
@@ -10254,8 +10257,8 @@
     "position": "K",
     "team": "Rams",
     "name": "Greg Zuerlein",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 56.0,
+    "hitting_power": 31.0,
     "kicking_ability": 44.0,
     "avoid_kick_block": 44.0,
     "sim_kicking_ability": 5.0
@@ -10264,8 +10267,8 @@
     "position": "K",
     "team": "Seahawks",
     "name": "S. Hauschka",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 56.0,
+    "hitting_power": 31.0,
     "kicking_ability": 44.0,
     "avoid_kick_block": 25.0,
     "sim_kicking_ability": 5.0
@@ -10274,8 +10277,8 @@
     "position": "K",
     "team": "Vikings",
     "name": "Blair Walsh",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 56.0,
+    "hitting_power": 31.0,
     "kicking_ability": 38.0,
     "avoid_kick_block": 38.0,
     "sim_kicking_ability": 4.0
@@ -10284,8 +10287,8 @@
     "position": "K",
     "team": "Steelers",
     "name": "Shaun Suisham",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 56.0,
+    "hitting_power": 31.0,
     "kicking_ability": 31.0,
     "avoid_kick_block": 44.0,
     "sim_kicking_ability": 3.0
@@ -10294,8 +10297,8 @@
     "position": "K",
     "team": "Redskins",
     "name": "Billy Cundiff",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 56.0,
+    "hitting_power": 31.0,
     "kicking_ability": 31.0,
     "avoid_kick_block": 50.0,
     "sim_kicking_ability": 3.0
@@ -10304,8 +10307,8 @@
     "position": "K",
     "team": "Giants",
     "name": "Lawrence Tynes",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 56.0,
+    "hitting_power": 31.0,
     "kicking_ability": 25.0,
     "avoid_kick_block": 25.0,
     "sim_kicking_ability": 2.0
@@ -10314,8 +10317,8 @@
     "position": "K",
     "team": "Cardinals",
     "name": "Jay Feely",
-    "running_speed.1": 56.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 56.0,
+    "hitting_power": 31.0,
     "kicking_ability": 25.0,
     "avoid_kick_block": 56.0,
     "sim_kicking_ability": 2.0
@@ -10324,8 +10327,8 @@
     "position": "P",
     "team": "Panthers",
     "name": "Brad Nortman",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 38.0,
+    "running_speed": 25.0,
+    "hitting_power": 38.0,
     "kicking_ability": 38.0,
     "avoid_kick_block": 38.0,
     "sim_kicking_ability": 4.0
@@ -10334,8 +10337,8 @@
     "position": "P",
     "team": "Ravens",
     "name": "Sam Koch",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 75.0,
     "avoid_kick_block": 75.0,
     "sim_kicking_ability": 11.0
@@ -10344,8 +10347,8 @@
     "position": "P",
     "team": "Raiders",
     "name": "Shane Lechler",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 75.0,
     "avoid_kick_block": 81.0,
     "sim_kicking_ability": 11.0
@@ -10354,8 +10357,8 @@
     "position": "P",
     "team": "49ers",
     "name": "Andy Lee",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 75.0,
     "avoid_kick_block": 81.0,
     "sim_kicking_ability": 11.0
@@ -10364,8 +10367,8 @@
     "position": "P",
     "team": "Browns",
     "name": "Reggie Hodges",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 69.0,
     "avoid_kick_block": 69.0,
     "sim_kicking_ability": 10.0
@@ -10374,8 +10377,8 @@
     "position": "P",
     "team": "Chiefs",
     "name": "Dustin Colquitt",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 63.0,
     "avoid_kick_block": 69.0,
     "sim_kicking_ability": 9.0
@@ -10384,8 +10387,8 @@
     "position": "P",
     "team": "Chargers",
     "name": "Mike Scifres",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 63.0,
     "avoid_kick_block": 69.0,
     "sim_kicking_ability": 9.0
@@ -10394,8 +10397,8 @@
     "position": "P",
     "team": "Bills",
     "name": "Brian Moorman",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 56.0,
     "avoid_kick_block": 63.0,
     "sim_kicking_ability": 7.0
@@ -10404,8 +10407,8 @@
     "position": "P",
     "team": "Texans",
     "name": "Donnie Jones",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 56.0,
     "avoid_kick_block": 63.0,
     "sim_kicking_ability": 7.0
@@ -10414,8 +10417,8 @@
     "position": "P",
     "team": "Rams",
     "name": "Johnny Hekker",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 56.0,
     "avoid_kick_block": 63.0,
     "sim_kicking_ability": 7.0
@@ -10424,8 +10427,8 @@
     "position": "P",
     "team": "Seahawks",
     "name": "Jon Ryan",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 56.0,
     "avoid_kick_block": 56.0,
     "sim_kicking_ability": 7.0
@@ -10434,8 +10437,8 @@
     "position": "P",
     "team": "Buccaneers",
     "name": "Michael Koenen",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 50.0,
     "avoid_kick_block": 50.0,
     "sim_kicking_ability": 6.0
@@ -10444,8 +10447,8 @@
     "position": "P",
     "team": "Saints",
     "name": "Thomas Morstead",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 50.0,
     "avoid_kick_block": 50.0,
     "sim_kicking_ability": 6.0
@@ -10454,8 +10457,8 @@
     "position": "P",
     "team": "Patriots",
     "name": "Zoltan Mesko",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 44.0,
     "avoid_kick_block": 44.0,
     "sim_kicking_ability": 5.0
@@ -10464,8 +10467,8 @@
     "position": "P",
     "team": "Colts",
     "name": "Pat Mcafee",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 44.0,
     "avoid_kick_block": 44.0,
     "sim_kicking_ability": 5.0
@@ -10474,8 +10477,8 @@
     "position": "P",
     "team": "Broncos",
     "name": "Britton Colquitt",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 44.0,
     "avoid_kick_block": 44.0,
     "sim_kicking_ability": 5.0
@@ -10484,8 +10487,8 @@
     "position": "P",
     "team": "Cowboys",
     "name": "Chris Jones",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 44.0,
     "avoid_kick_block": 69.0,
     "sim_kicking_ability": 5.0
@@ -10494,8 +10497,8 @@
     "position": "P",
     "team": "Lions",
     "name": "Ryan Donahue",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 44.0,
     "avoid_kick_block": 38.0,
     "sim_kicking_ability": 5.0
@@ -10504,8 +10507,8 @@
     "position": "P",
     "team": "Steelers",
     "name": "Drew Butler",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 38.0,
     "avoid_kick_block": 38.0,
     "sim_kicking_ability": 4.0
@@ -10514,8 +10517,8 @@
     "position": "P",
     "team": "Redskins",
     "name": "Sav Rocca",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 38.0,
     "avoid_kick_block": 38.0,
     "sim_kicking_ability": 4.0
@@ -10524,8 +10527,8 @@
     "position": "P",
     "team": "Giants",
     "name": "S. Weatherford",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 38.0,
     "avoid_kick_block": 38.0,
     "sim_kicking_ability": 4.0
@@ -10534,8 +10537,8 @@
     "position": "P",
     "team": "Vikings",
     "name": "Chris Kluwe",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 38.0,
     "avoid_kick_block": 38.0,
     "sim_kicking_ability": 4.0
@@ -10544,8 +10547,8 @@
     "position": "P",
     "team": "Falcons",
     "name": "Matt Bosher",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 38.0,
     "avoid_kick_block": 38.0,
     "sim_kicking_ability": 4.0
@@ -10554,8 +10557,8 @@
     "position": "P",
     "team": "Cardinals",
     "name": "Dave Zastudil",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 38.0,
     "avoid_kick_block": 38.0,
     "sim_kicking_ability": 4.0
@@ -10564,8 +10567,8 @@
     "position": "P",
     "team": "Jets",
     "name": "Robert Malone",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 31.0,
     "avoid_kick_block": 31.0,
     "sim_kicking_ability": 3.0
@@ -10574,8 +10577,8 @@
     "position": "P",
     "team": "Bengals",
     "name": "Kevin Huber",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 31.0,
     "avoid_kick_block": 31.0,
     "sim_kicking_ability": 3.0
@@ -10584,8 +10587,8 @@
     "position": "P",
     "team": "Jaguars",
     "name": "Bryan Anger",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 31.0,
     "avoid_kick_block": 31.0,
     "sim_kicking_ability": 3.0
@@ -10594,8 +10597,8 @@
     "position": "P",
     "team": "Titans",
     "name": "Brett Kern",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 31.0,
     "avoid_kick_block": 31.0,
     "sim_kicking_ability": 3.0
@@ -10604,8 +10607,8 @@
     "position": "P",
     "team": "Eagles",
     "name": "Chas Henry",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 31.0,
     "avoid_kick_block": 31.0,
     "sim_kicking_ability": 3.0
@@ -10614,8 +10617,8 @@
     "position": "P",
     "team": "Bears",
     "name": "Adam Podlesh",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 31.0,
     "avoid_kick_block": 31.0,
     "sim_kicking_ability": 3.0
@@ -10624,8 +10627,8 @@
     "position": "P",
     "team": "Packers",
     "name": "Tim Masthay",
-    "running_speed.1": 25.0,
-    "hitting_power.1": 31.0,
+    "running_speed": 25.0,
+    "hitting_power": 31.0,
     "kicking_ability": 31.0,
     "avoid_kick_block": 31.0,
     "sim_kicking_ability": 3.0
@@ -10635,12 +10638,12 @@
     "team": "Dolphins",
     "name": "Brandon Fields",
     "running_speed": 25.0,
-    "hitting_power.1": 25.0,
-    "kicking_ability.1": 50.0,
+    "hitting_power": 25.0,
+    "kicking_ability": 50.0,
     "avoid_kick_block": 50.0,
     "sim_kicking_ability": 6.0
-  },
-    ],
+  }
+  ],
   "teams": [
     {
       "name": "Bills",
@@ -10648,10 +10651,20 @@
         "rushingPower": 69,
         "hittingPower": 55
       }
+    },
+    {
+      "name": "Packers",
+      "ol": {
+        "rushingPower": 72,
+        "hittingPower": 60
+      }
+    },
+    {
+      "name": "Patriots",
+      "ol": {
+        "rushingPower": 65,
+        "hittingPower": 58
+      }
     }
   ]
 }
-  
-
-  
-
