@@ -4,10 +4,10 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>Snake Draft Room</title>
 
-<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<!-- ✅ FIXED SOCKET (CRITICAL) -->
+<script src="/socket.io/socket.io.js"></script>
 
 <style>
 
@@ -182,30 +182,57 @@ const socket = io()
 let state = {}
 let positionFilter = "ALL"
 
+/* ✅ DEBUG CONNECTION */
+socket.on("connect", ()=>{
+  console.log("CONNECTED TO SERVER ✅")
+})
+
 socket.on("state", s=>{
-state = s
-render()
+  console.log("STATE RECEIVED:", s)
+  state = s
+  render()
 })
 
 socket.on("timer", t=>{
-document.getElementById("timer").innerText = t
+  document.getElementById("timer").innerText = t
 })
+
+/* ---------- START ---------- */
 
 function start(){
 
-fetch("players.json")
+fetch("/players.json")
 .then(r=>r.json())
 .then(data=>{
 
-let players = data.players || data
+  let players = data.players || data
 
-let teams = prompt("Enter team names separated by comma").split(",")
+  let input = prompt("Enter team names separated by comma")
 
-socket.emit("setup",{teams,players})
+  if(!input){
+    alert("You must enter team names")
+    return
+  }
 
+  let teams = input.split(",").map(t=>t.trim()).filter(t=>t)
+
+  if(teams.length < 2){
+    alert("Enter at least 2 teams")
+    return
+  }
+
+  console.log("STARTING DRAFT:", teams)
+
+  socket.emit("setup",{teams,players})
+
+})
+.catch(err=>{
+  console.error("players.json failed:", err)
 })
 
 }
+
+/* ---------- ACTIONS ---------- */
 
 function draft(name){
 socket.emit("draft", name)
@@ -222,6 +249,8 @@ socket.emit("undo")
 function resetDraft(){
 socket.emit("setup",{teams:state.teams,players:state.players})
 }
+
+/* ---------- EXPORT ---------- */
 
 function exportDraft(){
 
@@ -255,21 +284,25 @@ a.click()
 
 }
 
+/* ---------- FILTER ---------- */
+
 function setFilter(pos){
 positionFilter = pos
 render()
 }
 
+/* ---------- RENDER ---------- */
+
 function render(){
+
+if(!state.players) return
 
 let list = document.getElementById("players")
 list.innerHTML = ""
 
 let search = document.getElementById("search").value.toLowerCase()
 
-if(!state.players) return
-
-// 🔥 PLAYER LIST
+// PLAYERS
 state.players.forEach(p=>{
 
 if(positionFilter !== "ALL" && p.position !== positionFilter) return
@@ -285,7 +318,7 @@ list.appendChild(d)
 
 })
 
-// 🔥 OL VIEW
+// OL VIEW
 if(positionFilter === "OL" && state.teamsData){
 
 state.teamsData.forEach(t=>{
@@ -304,7 +337,7 @@ list.appendChild(d)
 
 }
 
-// 🔥 BOARD
+// BOARD
 let board=document.getElementById("board")
 board.innerHTML=""
 
@@ -364,7 +397,7 @@ cells[teamIndex].innerText=picks[pickIndex]
 board.appendChild(row)
 }
 
-// 🔥 HISTORY
+// HISTORY
 let history=document.getElementById("history")
 history.innerHTML=""
 
@@ -384,5 +417,4 @@ history.appendChild(row)
 </script>
 
 </body>
-
 </html>
