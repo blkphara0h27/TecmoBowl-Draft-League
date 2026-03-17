@@ -17,10 +17,9 @@ let draftOrder = []
 let timer = 60
 let interval = null
 
-// ✅ NEW: TEAM OL DATA
 let teamsData = []
 
-/* ---------- LOAD PLAYERS + TEAM OL ---------- */
+/* LOAD DATA */
 
 function loadData(){
   if(fs.existsSync("players.json")){
@@ -29,74 +28,62 @@ function loadData(){
     teamsData = data.teams || []
   }
 }
-
 loadData()
 
-/* ---------- LOAD SAVED DRAFT ---------- */
+/* LOAD DRAFT */
 
 function loadDraft(){
-  if(fs.existsSync("draft.json")){
-    let data = JSON.parse(fs.readFileSync("draft.json"))
+  if(fs.existsSync("/tmp/draft.json")){
+    let data = JSON.parse(fs.readFileSync("/tmp/draft.json"))
     teams = data.teams || []
     drafted = data.drafted || []
     currentPick = data.currentPick || 0
     draftOrder = data.draftOrder || []
   }
 }
-
 loadDraft()
 
-/* ---------- SAVE DRAFT ---------- */
+/* SAVE */
 
 function saveDraft(){
-  let data = {
-    teams,
-    drafted,
-    currentPick,
-    draftOrder
-  }
-  fs.writeFileSync("draft.json", JSON.stringify(data, null, 2))
+  let data = {teams,drafted,currentPick,draftOrder}
+  fs.writeFileSync("/tmp/draft.json", JSON.stringify(data,null,2))
 }
 
-/* ---------- SNAKE ORDER ---------- */
+/* SNAKE */
 
 function snakeOrder(teamCount, rounds){
-  let order = []
+  let order=[]
   for(let r=0;r<rounds;r++){
     if(r%2===0){
       for(let i=0;i<teamCount;i++) order.push(i)
-    }else{
+    } else {
       for(let i=teamCount-1;i>=0;i--) order.push(i)
     }
   }
   return order
 }
 
-/* ---------- TIMER ---------- */
+/* TIMER */
 
 function startTimer(){
   clearInterval(interval)
-  timer = 60
+  timer=60
 
-  interval = setInterval(()=>{
+  interval=setInterval(()=>{
     timer--
-    io.emit("timer", timer)
-
-    if(timer <= 0){
-      autoPick()
-    }
-
+    io.emit("timer",timer)
+    if(timer<=0) autoPick()
   },1000)
 }
 
-/* ---------- AUTO PICK ---------- */
+/* AUTO */
 
 function autoPick(){
-  let available = players.filter(p => !drafted.includes(p.name))
-  if(available.length === 0) return
+  let available = players.filter(p=>!drafted.includes(p.name))
+  if(available.length===0) return
 
   let pick = available[0]
-
   drafted.push(pick.name)
   currentPick++
 
@@ -107,42 +94,38 @@ function autoPick(){
   startTimer()
 }
 
-/* ---------- SOCKET ---------- */
+/* SOCKET */
 
-io.on("connection", socket => {
+io.on("connection",socket=>{
 
   socket.emit("state",{teams,players,drafted,currentPick,draftOrder,teamsData})
 
-  socket.on("setup", data => {
+  socket.on("setup",data=>{
     teams = data.teams
-    players = data.players
 
-    drafted = []
-    currentPick = 0
-
-    draftOrder = snakeOrder(teams.length,20)
+    drafted=[]
+    currentPick=0
+    draftOrder=snakeOrder(teams.length,20)
 
     saveDraft()
-
     startTimer()
 
     io.emit("state",{teams,players,drafted,currentPick,draftOrder,teamsData})
   })
 
-  socket.on("draft", player => {
+  socket.on("draft",player=>{
     if(drafted.includes(player)) return
 
     drafted.push(player)
     currentPick++
 
     saveDraft()
-
     startTimer()
 
     io.emit("state",{teams,players,drafted,currentPick,draftOrder,teamsData})
   })
 
-  socket.on("undo", () => {
+  socket.on("undo",()=>{
     drafted.pop()
     currentPick--
 
@@ -151,16 +134,11 @@ io.on("connection", socket => {
     io.emit("state",{teams,players,drafted,currentPick,draftOrder,teamsData})
   })
 
-  socket.on("pause", () => {
+  socket.on("pause",()=>{
     clearInterval(interval)
   })
 
 })
 
-/* ---------- START ---------- */
-
 const PORT = process.env.PORT || 3000
-
-server.listen(PORT,()=>{
-  console.log("Server running")
-})
+server.listen(PORT,()=>console.log("Server running"))
