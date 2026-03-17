@@ -12,7 +12,6 @@ body{font-family:Arial;background:#f0f0f0;margin:10px;}
 #layout{display:grid;grid-template-columns:1fr 2fr 1fr;gap:20px;}
 
 #players{background:white;padding:10px;max-height:500px;overflow:auto;border-radius:6px;}
-
 .player{padding:12px;border-bottom:1px solid #ddd;cursor:pointer;}
 .player:hover{background:#eee;}
 
@@ -21,10 +20,14 @@ body{font-family:Arial;background:#f0f0f0;margin:10px;}
 .wr{background:#d6e4ff}
 .te{background:#f0d6ff}
 
-#board{background:white;padding:10px;border-radius:6px;overflow-x:auto;white-space:nowrap;}
+#board{background:white;padding:10px;border-radius:6px;overflow-x:auto;}
 .round{display:flex;}
 
-.cell{width:120px;border:1px solid #ccc;padding:6px;height:45px;display:flex;align-items:center;justify-content:center;}
+.cell{
+width:120px;border:1px solid #ccc;padding:6px;height:45px;
+display:flex;align-items:center;justify-content:center;
+}
+
 .header{background:#ddd;font-weight:bold;}
 
 #history{background:white;padding:10px;max-height:250px;overflow:auto;border-radius:6px;}
@@ -93,8 +96,6 @@ socket.on("timer", t=>{
   document.getElementById("timer").innerText = t
 })
 
-/* ---------- START ---------- */
-
 function start(){
 
 fetch("/players.json")
@@ -104,7 +105,7 @@ fetch("/players.json")
   let players = data.players
   let nflTeams = data.teams
 
-  let input = prompt("Enter draft users (comma separated)")
+  let input = prompt("Enter draft users")
   if(!input) return
 
   let draftUsers = input.split(",").map(t=>t.trim()).filter(t=>t)
@@ -116,17 +117,12 @@ fetch("/players.json")
   })
 
 })
-
 }
 
-/* ---------- FILTER ---------- */
-
-function setFilter(pos){
-  positionFilter = pos
+function setFilter(p){
+  positionFilter=p
   render()
 }
-
-/* ---------- RENDER ---------- */
 
 function render(){
 
@@ -135,23 +131,25 @@ list.innerHTML=""
 
 let search=document.getElementById("search").value.toLowerCase()
 
-/* 🔥 TEAMS FILTER */
+/* TEAMS MODE */
 
 if(positionFilter==="TEAMS"){
 
-  let teams = state.nflTeams || []
+  (state.nflTeams||[]).forEach(t=>{
 
-  teams.forEach(t=>{
     if(!t.name.toLowerCase().includes(search)) return
 
     let d=document.createElement("div")
     d.className="player"
+    d.style.background="#fff3b0"
 
-    d.innerHTML = `
+    d.innerHTML=`
       <strong>${t.name}</strong><br>
       OL Rush: ${t.ol.rushingPower}<br>
       OL Hit: ${t.ol.hittingPower}
     `
+
+    d.onclick=()=>socket.emit("draft", t.name)
 
     list.appendChild(d)
   })
@@ -159,9 +157,9 @@ if(positionFilter==="TEAMS"){
   return
 }
 
-/* ---------- PLAYERS ---------- */
+/* PLAYERS */
 
-(state.players || []).forEach(p=>{
+(state.players||[]).forEach(p=>{
 
 if(positionFilter!=="ALL" && p.position!==positionFilter) return
 if(state.drafted?.includes(p.name)) return
@@ -170,19 +168,23 @@ if(!p.name.toLowerCase().includes(search)) return
 let d=document.createElement("div")
 d.className="player "+p.position.toLowerCase()
 d.innerText=p.name+" ("+p.position+")"
+
 d.onclick=()=>socket.emit("draft", p.name)
 
 list.appendChild(d)
 
 })
 
-/* ---------- BOARD ---------- */
+/* BOARD */
 
 let board=document.getElementById("board")
 board.innerHTML=""
 
 let teams=state.teams||[]
 let picks=state.drafted||[]
+let order=state.draftOrder||[]
+
+let cols=teams.length
 
 let header=document.createElement("div")
 header.className="round"
@@ -200,6 +202,51 @@ header.appendChild(c)
 })
 
 board.appendChild(header)
+
+let totalRounds=Math.ceil(picks.length/cols)
+
+for(let r=0;r<totalRounds;r++){
+
+let row=document.createElement("div")
+row.className="round"
+
+let rc=document.createElement("div")
+rc.className="cell header"
+rc.innerText=r+1
+row.appendChild(rc)
+
+let cells=[]
+
+for(let c=0;c<cols;c++){
+let cell=document.createElement("div")
+cell.className="cell"
+cells.push(cell)
+row.appendChild(cell)
+}
+
+for(let i=0;i<cols;i++){
+
+let idx=r*cols+i
+if(!picks[idx]) continue
+
+let teamIndex=order[idx]
+cells[teamIndex].innerText=picks[idx]
+}
+
+board.appendChild(row)
+}
+
+/* HISTORY */
+
+let history=document.getElementById("history")
+history.innerHTML=""
+
+picks.forEach((p,i)=>{
+let team=teams[order[i]]
+let row=document.createElement("div")
+row.innerText=(i+1)+". "+team+" → "+p
+history.appendChild(row)
+})
 
 }
 
