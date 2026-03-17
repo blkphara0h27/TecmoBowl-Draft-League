@@ -1,57 +1,223 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snake Draft Room</title>
+
+<!-- ✅ CRITICAL FIX: USE LOCAL SOCKET -->
+<script src="/socket.io/socket.io.js"></script>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f0f0f0;
+margin:10px;
+}
+
+#layout{
+display:grid;
+grid-template-columns:1fr 2fr 1fr;
+gap:20px;
+}
+
+#players{
+background:white;
+padding:10px;
+max-height:500px;
+overflow:auto;
+border-radius:6px;
+}
+
+.player{
+padding:12px;
+border-bottom:1px solid #ddd;
+cursor:pointer;
+}
+
+.player:hover{
+background:#eee;
+}
+
+.qb{background:#ffd6d6}
+.rb{background:#d6ffd6}
+.wr{background:#d6e4ff}
+.te{background:#f0d6ff}
+.k{background:#fff3b0}
+.def{background:#e0e0e0}
+
+#board{
+background:white;
+padding:10px;
+border-radius:6px;
+overflow-x:auto;
+white-space:nowrap;
+}
+
+.round{display:flex;}
+
+.cell{
+width:120px;
+border:1px solid #ccc;
+padding:6px;
+font-size:12px;
+height:45px;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.header{
+background:#ddd;
+font-weight:bold;
+}
+
+#history{
+background:white;
+padding:10px;
+max-height:250px;
+overflow:auto;
+border-radius:6px;
+}
+
+#timer{
+color:red;
+font-weight:bold;
+}
+
+#playerCard{
+display:none;
+position:fixed;
+top:10%;
+left:5%;
+width:90%;
+max-width:400px;
+background:white;
+border:2px solid black;
+padding:15px;
+z-index:1000;
+}
+
+button{
+padding:8px;
+margin:2px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Snake Draft Room</h2>
+
+<button onclick="start()">Start Draft</button>
+<button onclick="pause()">Pause</button>
+<button onclick="undo()">Undo</button>
+<button onclick="resetDraft()">Reset Draft</button>
+
+<br><br>
+
+Draft Timer: <span id="timer">60</span>
+
+<div id="layout">
+
+<div>
+<h3>Players</h3>
+
+<button onclick="setFilter('ALL')">All</button>
+<button onclick="setFilter('QB')">QB</button>
+<button onclick="setFilter('RB')">RB</button>
+<button onclick="setFilter('WR')">WR</button>
+<button onclick="setFilter('TE')">TE</button>
+
+<br><br>
+
+<input id="search" onkeyup="render()" placeholder="Search...">
+
+<div id="players"></div>
+</div>
+
+<div>
+<h3>Draft Board</h3>
+<div id="board"></div>
+</div>
+
+<div>
+<h3>History</h3>
+<div id="history"></div>
+</div>
+
+</div>
+
+<div id="playerCard">
+<h3 id="cardName"></h3>
+<div id="cardStats"></div>
+<br>
+<button id="draftButton">Draft</button>
+<button onclick="closeCard()">Close</button>
+</div>
+
 <script>
 
-const socket=io()
+// ✅ SOCKET SAFE INIT
+if (typeof io === "undefined") {
+  alert("Socket.io failed to load")
+}
 
-let state={}
-let positionFilter="ALL"
+const socket = io()
+
+let state = {}
+let positionFilter = "ALL"
 
 /* ---------- SOCKET ---------- */
 
-socket.on("state",s=>{
-state=s
-render()
+socket.on("state", s=>{
+  state = s
+  render()
 })
 
-socket.on("timer",t=>{
-document.getElementById("timer").innerText=t
+socket.on("timer", t=>{
+  document.getElementById("timer").innerText = t
 })
 
 /* ---------- START ---------- */
 
 function start(){
 
-fetch("/players.json") // ✅ FIXED PATH
+fetch("/players.json")
 .then(r=>{
-if(!r.ok) throw new Error("players.json not found")
-return r.json()
+  if(!r.ok) throw new Error("players.json not found")
+  return r.json()
 })
 .then(data=>{
 
-// ✅ CRITICAL FIX
-let players = data.players
+  let players = data.players
 
-if(!players || !Array.isArray(players)){
-alert("Players file broken")
-return
-}
+  if(!players || !Array.isArray(players)){
+    alert("Players file broken")
+    return
+  }
 
-let input=prompt("Enter team names separated by comma")
+  let input = prompt("Enter team names separated by comma")
+  if(!input) return
 
-if(!input) return
+  let teams = input.split(",").map(t=>t.trim()).filter(t=>t)
 
-let teams=input.split(",").map(t=>t.trim()).filter(t=>t)
+  if(teams.length < 2){
+    alert("Need at least 2 teams")
+    return
+  }
 
-if(teams.length<2){
-alert("Need at least 2 teams")
-return
-}
-
-socket.emit("setup",{teams,players})
+  socket.emit("setup",{teams,players})
 
 })
 .catch(err=>{
-console.error(err)
-alert("Error loading players.json")
+  console.error(err)
+  alert("Error loading players.json")
 })
 
 }
@@ -59,19 +225,14 @@ alert("Error loading players.json")
 /* ---------- ACTIONS ---------- */
 
 function draft(name){
-socket.emit("draft",name)
+  socket.emit("draft", name)
 }
 
-function pause(){
-socket.emit("pause")
-}
-
-function undo(){
-socket.emit("undo")
-}
+function pause(){ socket.emit("pause") }
+function undo(){ socket.emit("undo") }
 
 function resetDraft(){
-socket.emit("setup",{teams:state.teams,players:state.players})
+  socket.emit("setup",{teams:state.teams,players:state.players})
 }
 
 /* ---------- PLAYER CARD ---------- */
@@ -216,3 +377,6 @@ history.appendChild(row)
 }
 
 </script>
+
+</body>
+</html>
