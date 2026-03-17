@@ -1,151 +1,55 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>Snake Draft Room</title>
 
-<!-- ✅ FIXED SOCKET -->
 <script src="/socket.io/socket.io.js"></script>
 
 <style>
-
-body{
-font-family:Arial;
-background:#f0f0f0;
-margin:10px;
-}
-
-#layout{
-display:grid;
-grid-template-columns:1fr 2fr 1fr;
-gap:20px;
-}
-
-#players{
-background:white;
-padding:10px;
-max-height:500px;
-overflow:auto;
-border-radius:6px;
-}
-
-.player{
-padding:12px;
-border-bottom:1px solid #ddd;
-cursor:pointer;
-font-size:14px;
-}
-
-.player:hover{
-background:#eee;
-}
-
+body{font-family:Arial;background:#f0f0f0;margin:10px}
+#layout{display:grid;grid-template-columns:1fr 2fr 1fr;gap:20px}
+#players{background:white;padding:10px;max-height:500px;overflow:auto;border-radius:6px}
+.player{padding:10px;border-bottom:1px solid #ddd;cursor:pointer}
+.player:hover{background:#eee}
 .qb{background:#ffd6d6}
 .rb{background:#d6ffd6}
 .wr{background:#d6e4ff}
 .te{background:#f0d6ff}
-.k{background:#fff3b0}
-.def{background:#e0e0e0}
-
-#board{
-background:white;
-padding:10px;
-border-radius:6px;
-overflow-x:auto;
-white-space:nowrap;
-}
-
-.round{display:flex;}
-
-.cell{
-width:120px;
-border:1px solid #ccc;
-padding:6px;
-font-size:12px;
-height:45px;
-display:flex;
-align-items:center;
-justify-content:center;
-text-align:center;
-}
-
-.header{
-font-weight:bold;
-background:#e3e3e3;
-}
-
-#history{
-background:white;
-padding:10px;
-max-height:250px;
-overflow:auto;
-border-radius:6px;
-}
-
-button{
-padding:8px;
-margin:2px;
-cursor:pointer;
-}
-
-#timer{
-font-weight:bold;
-color:red;
-}
-
+#board{background:white;padding:10px;border-radius:6px}
+.cell{width:120px;border:1px solid #ccc;padding:5px;font-size:12px}
+.header{font-weight:bold;background:#ddd}
 </style>
-
 </head>
 
 <body>
 
-<h2>Snake Draft Room</h2>
+<h2>Snake Draft</h2>
 
 <button onclick="start()">Start Draft</button>
 <button onclick="pause()">Pause</button>
 <button onclick="undo()">Undo</button>
-<button onclick="resetDraft()">Reset Draft</button>
 
 <br><br>
 
-Current Pick: <span id="current"></span>
-
-<br>
-
-Draft Timer: <span id="timer">60</span>
-
-<br><br>
+Timer: <span id="timer">60</span>
 
 <div id="layout">
 
 <div>
-
 <h3>Players</h3>
-
-Search<br>
-<input id="search" onkeyup="render()">
-
-<br><br>
-
+<input id="search" onkeyup="render()" placeholder="Search...">
 <div id="players"></div>
-
 </div>
 
 <div>
-
-<h3>Draft Board</h3>
+<h3>Board</h3>
 <div id="board"></div>
-
 </div>
 
 <div>
-
-<h3>Draft History</h3>
+<h3>History</h3>
 <div id="history"></div>
-
 </div>
 
 </div>
@@ -153,160 +57,92 @@ Search<br>
 <script>
 
 const socket = io()
-
 let state = {}
 
-socket.on("connect", ()=>{
-console.log("Connected to server ✅")
-})
-
 socket.on("state", s=>{
-state = s
-render()
+  state = s
+  render()
 })
 
 socket.on("timer", t=>{
-document.getElementById("timer").innerText = t
+  document.getElementById("timer").innerText = t
 })
 
 function start(){
 
-fetch("/players.json")
-.then(r=>r.json())
-.then(data=>{
+  console.log("Start clicked")
 
-let players = data.players || data
+  fetch("/players.json")
+  .then(r=>{
+    if(!r.ok) throw new Error("players.json missing")
+    return r.json()
+  })
+  .then(data=>{
 
-let input = prompt("Enter team names separated by comma")
+    let players = data.players || data
 
-if(!input) return alert("Enter teams!")
+    let input = prompt("Enter team names separated by comma")
+    if(!input) return
 
-let teams = input.split(",").map(t=>t.trim()).filter(t=>t)
+    let teams = input.split(",").map(t=>t.trim())
 
-if(teams.length < 2) return alert("Need at least 2 teams!")
+    socket.emit("setup",{teams,players})
 
-socket.emit("setup",{teams,players})
-
-})
-
+  })
+  .catch(err=>{
+    console.error(err)
+    alert("Failed to load players.json")
+  })
 }
 
 function draft(name){
-socket.emit("draft", name)
+  socket.emit("draft", name)
 }
 
-function pause(){
-socket.emit("pause")
-}
-
-function undo(){
-socket.emit("undo")
-}
-
-function resetDraft(){
-socket.emit("setup",{teams:state.teams,players:state.players})
-}
+function pause(){ socket.emit("pause") }
+function undo(){ socket.emit("undo") }
 
 function render(){
 
-if(!state.players) return
+  if(!state.players) return
 
-let list=document.getElementById("players")
-list.innerHTML=""
+  let list = document.getElementById("players")
+  list.innerHTML = ""
 
-let search=document.getElementById("search").value.toLowerCase()
+  let search = document.getElementById("search").value.toLowerCase()
 
-state.players.forEach(p=>{
+  state.players.forEach(p=>{
 
-if(state.drafted.includes(p.name)) return
-if(!p.name.toLowerCase().includes(search)) return
+    if(state.drafted.includes(p.name)) return
+    if(!p.name.toLowerCase().includes(search)) return
 
-let d=document.createElement("div")
+    let d = document.createElement("div")
 
-d.className="player"
-d.innerText=p.name+" ("+p.position+")"
+    // 🔥 POSITION COLOR
+    d.className = "player " + p.position.toLowerCase()
 
-d.onclick=()=>draft(p.name)
+    // 🔥 SMART STAT DISPLAY
+    let stat = p.passing_accuracy || p.receptions || p.maximum_speed || 0
 
-list.appendChild(d)
+    d.innerText = `${p.name} (${p.position}) ⭐${stat}`
 
-})
+    d.onclick = ()=>draft(p.name)
 
-let board=document.getElementById("board")
-board.innerHTML=""
+    list.appendChild(d)
+  })
 
-let teams=state.teams||[]
-let picks=state.drafted||[]
-let cols=teams.length
+  // HISTORY
+  let history = document.getElementById("history")
+  history.innerHTML = ""
 
-let header=document.createElement("div")
-header.className="round"
-
-let roundHeader=document.createElement("div")
-roundHeader.className="cell header"
-roundHeader.innerText="Round"
-
-header.appendChild(roundHeader)
-
-teams.forEach(team=>{
-let cell=document.createElement("div")
-cell.className="cell header"
-cell.innerText=team
-header.appendChild(cell)
-})
-
-board.appendChild(header)
-
-let totalRounds=Math.ceil(picks.length/cols)
-
-for(let r=0;r<totalRounds;r++){
-
-let row=document.createElement("div")
-row.className="round"
-
-let roundCell=document.createElement("div")
-roundCell.className="cell header"
-roundCell.innerText=r+1
-row.appendChild(roundCell)
-
-let cells=[]
-
-for(let c=0;c<cols;c++){
-let cell=document.createElement("div")
-cell.className="cell"
-cells.push(cell)
-row.appendChild(cell)
-}
-
-for(let i=0;i<cols;i++){
-
-let pickIndex=r*cols+i
-if(!picks[pickIndex]) continue
-
-let teamIndex=state.draftOrder[pickIndex]
-cells[teamIndex].innerText=picks[pickIndex]
-
-}
-
-board.appendChild(row)
-}
-
-let history=document.getElementById("history")
-history.innerHTML=""
-
-picks.forEach((p,i)=>{
-let team=teams[state.draftOrder[i]]
-
-let row=document.createElement("div")
-row.innerText=(i+1)+". "+team+" → "+p
-
-history.appendChild(row)
-})
-
+  state.drafted.forEach((p,i)=>{
+    let row = document.createElement("div")
+    row.innerText = (i+1) + ". " + p
+    history.appendChild(row)
+  })
 }
 
 </script>
 
 </body>
-
 </html>
