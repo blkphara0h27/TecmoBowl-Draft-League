@@ -16,28 +16,25 @@ let currentPick = 0
 let draftOrder = []
 let timer = 60
 let interval = null
-
 let teamsData = []
 
-// ✅ PERSISTENT FILE LOCATION
 const SAVE_PATH = "/data/draft.json"
 
 /* ---------- LOAD DATA ---------- */
 
 function loadData(){
   try{
-    const path = __dirname + "/public/players.json"
-    const raw = fs.readFileSync(path)
+    const raw = fs.readFileSync(__dirname + "/public/players.json")
     const data = JSON.parse(raw)
 
-    players = data.players || []
+    players = data.players || data
     teamsData = data.teams || []
 
-    console.log("Players loaded:", players.length)
-    console.log("Teams OL loaded:", teamsData.length)
+    console.log("Players:", players.length)
+    console.log("Teams:", teamsData.length)
 
   }catch(e){
-    console.error("ERROR loading players.json", e)
+    console.error("PLAYERS LOAD ERROR", e)
   }
 }
 
@@ -48,51 +45,43 @@ loadData()
 function loadDraft(){
   try{
     if(fs.existsSync(SAVE_PATH)){
-
-      let data = JSON.parse(fs.readFileSync(SAVE_PATH))
+      const data = JSON.parse(fs.readFileSync(SAVE_PATH))
 
       teams = data.teams || []
       drafted = data.drafted || []
       currentPick = data.currentPick || 0
       draftOrder = data.draftOrder || []
 
-      console.log("Draft loaded from disk ✅")
-
-    }else{
-      console.log("No saved draft found (first run)")
+      console.log("Draft restored ✅")
     }
   }catch(e){
-    console.error("Error loading draft:", e)
+    console.error("LOAD ERROR", e)
   }
 }
 
 loadDraft()
 
-/* ---------- SAVE DRAFT ---------- */
+/* ---------- SAVE ---------- */
 
 function saveDraft(){
   try{
-
-    let data = {
+    fs.writeFileSync(SAVE_PATH, JSON.stringify({
       teams,
       drafted,
       currentPick,
       draftOrder
-    }
+    }, null, 2))
 
-    fs.writeFileSync(SAVE_PATH, JSON.stringify(data, null, 2))
-
-    console.log("Draft saved ✅")
-
+    console.log("Saved ✅")
   }catch(e){
-    console.error("Error saving draft:", e)
+    console.error("SAVE ERROR", e)
   }
 }
 
-/* ---------- SNAKE ORDER ---------- */
+/* ---------- SNAKE ---------- */
 
 function snakeOrder(teamCount, rounds){
-  let order = []
+  let order=[]
 
   for(let r=0;r<rounds;r++){
     if(r%2===0){
@@ -112,7 +101,6 @@ function startTimer(){
   timer = 60
 
   interval = setInterval(()=>{
-
     timer--
     io.emit("timer", timer)
 
@@ -126,13 +114,10 @@ function startTimer(){
 /* ---------- AUTO PICK ---------- */
 
 function autoPick(){
-
   let available = players.filter(p => !drafted.includes(p.name))
-  if(available.length === 0) return
+  if(!available.length) return
 
-  let pick = available[0]
-
-  drafted.push(pick.name)
+  drafted.push(available[0].name)
   currentPick++
 
   saveDraft()
@@ -146,17 +131,23 @@ function autoPick(){
 
 io.on("connection", socket => {
 
-  console.log("User connected")
+  console.log("Client connected")
 
   socket.emit("state",{teams,players,drafted,currentPick,draftOrder,teamsData})
 
   socket.on("setup", data => {
 
+    console.log("SETUP:", data)
+
+    if(!data || !data.teams || data.teams.length < 2){
+      console.log("Invalid teams input")
+      return
+    }
+
     teams = data.teams
 
     drafted = []
     currentPick = 0
-
     draftOrder = snakeOrder(teams.length, 20)
 
     saveDraft()
@@ -165,11 +156,11 @@ io.on("connection", socket => {
     io.emit("state",{teams,players,drafted,currentPick,draftOrder,teamsData})
   })
 
-  socket.on("draft", player => {
+  socket.on("draft", name => {
 
-    if(drafted.includes(player)) return
+    if(drafted.includes(name)) return
 
-    drafted.push(player)
+    drafted.push(name)
     currentPick++
 
     saveDraft()
@@ -180,7 +171,7 @@ io.on("connection", socket => {
 
   socket.on("undo", () => {
 
-    if(drafted.length === 0) return
+    if(!drafted.length) return
 
     drafted.pop()
     currentPick--
@@ -190,13 +181,9 @@ io.on("connection", socket => {
     io.emit("state",{teams,players,drafted,currentPick,draftOrder,teamsData})
   })
 
-  socket.on("pause", () => {
-    clearInterval(interval)
-  })
+  socket.on("pause", () => clearInterval(interval))
 
 })
-
-/* ---------- START ---------- */
 
 const PORT = process.env.PORT || 3000
 
