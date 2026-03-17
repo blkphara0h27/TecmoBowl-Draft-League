@@ -19,52 +19,72 @@ let interval = null
 
 let teamsData = []
 
-/* LOAD DATA */
+/* ---------- LOAD DATA ---------- */
 
 function loadData(){
-  if(fs.existsSync("players.json")){
-    const data = JSON.parse(fs.readFileSync("players.json"))
-    players = data.players || data
+  try{
+    const path = __dirname + "/public/players.json"
+    const raw = fs.readFileSync(path)
+    const data = JSON.parse(raw)
+
+    players = data.players || []
     teamsData = data.teams || []
+
+    console.log("Players loaded:", players.length)
+    console.log("Teams OL loaded:", teamsData.length)
+
+  }catch(e){
+    console.error("ERROR loading players.json", e)
   }
 }
+
 loadData()
 
-/* LOAD DRAFT */
+/* ---------- LOAD DRAFT ---------- */
 
 function loadDraft(){
-  if(fs.existsSync("/tmp/draft.json")){
-    let data = JSON.parse(fs.readFileSync("/tmp/draft.json"))
-    teams = data.teams || []
-    drafted = data.drafted || []
-    currentPick = data.currentPick || 0
-    draftOrder = data.draftOrder || []
+  try{
+    if(fs.existsSync("/tmp/draft.json")){
+      let data = JSON.parse(fs.readFileSync("/tmp/draft.json"))
+
+      teams = data.teams || []
+      drafted = data.drafted || []
+      currentPick = data.currentPick || 0
+      draftOrder = data.draftOrder || []
+
+      console.log("Draft loaded")
+    }
+  }catch(e){
+    console.error("Error loading draft:", e)
   }
 }
+
 loadDraft()
 
-/* SAVE */
+/* ---------- SAVE ---------- */
 
 function saveDraft(){
   let data = {teams,drafted,currentPick,draftOrder}
   fs.writeFileSync("/tmp/draft.json", JSON.stringify(data,null,2))
 }
 
-/* SNAKE */
+/* ---------- SNAKE ---------- */
 
 function snakeOrder(teamCount, rounds){
   let order=[]
+
   for(let r=0;r<rounds;r++){
     if(r%2===0){
       for(let i=0;i<teamCount;i++) order.push(i)
-    } else {
+    }else{
       for(let i=teamCount-1;i>=0;i--) order.push(i)
     }
   }
+
   return order
 }
 
-/* TIMER */
+/* ---------- TIMER ---------- */
 
 function startTimer(){
   clearInterval(interval)
@@ -73,17 +93,22 @@ function startTimer(){
   interval=setInterval(()=>{
     timer--
     io.emit("timer",timer)
-    if(timer<=0) autoPick()
+
+    if(timer<=0){
+      autoPick()
+    }
+
   },1000)
 }
 
-/* AUTO */
+/* ---------- AUTO PICK ---------- */
 
 function autoPick(){
   let available = players.filter(p=>!drafted.includes(p.name))
   if(available.length===0) return
 
   let pick = available[0]
+
   drafted.push(pick.name)
   currentPick++
 
@@ -94,18 +119,20 @@ function autoPick(){
   startTimer()
 }
 
-/* SOCKET */
+/* ---------- SOCKET ---------- */
 
 io.on("connection",socket=>{
 
   socket.emit("state",{teams,players,drafted,currentPick,draftOrder,teamsData})
 
   socket.on("setup",data=>{
+
     teams = data.teams
 
     drafted=[]
     currentPick=0
-    draftOrder=snakeOrder(teams.length,20)
+
+    draftOrder = snakeOrder(teams.length,20)
 
     saveDraft()
     startTimer()
@@ -140,5 +167,10 @@ io.on("connection",socket=>{
 
 })
 
+/* ---------- START ---------- */
+
 const PORT = process.env.PORT || 3000
-server.listen(PORT,()=>console.log("Server running"))
+
+server.listen(PORT,()=>{
+  console.log("Server running")
+})
