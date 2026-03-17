@@ -10645,13 +10645,35 @@
   }
   ],
   "teams": [
-    {
+{
+  "name": "Bills",
+  "ol": {
+    "rushingPower": 69,
+    "hittingPower": 55
+  }
+},
+{
+  "name": "Dolphins",
+  "ol": {
+    "rushingPower": 64,
+    "hittingPower": 52
+  }
+},
+{
+  "name": "Patriots",
+  "ol": {
+    "rushingPower": 65,
+    "hittingPower": 58
+  }
+},
+{
   "name": "Jets",
   "ol": {
     "rushingPower": 68,
     "hittingPower": 60
   }
 },
+
 {
   "name": "Ravens",
   "ol": {
@@ -10680,6 +10702,7 @@
     "hittingPower": 62
   }
 },
+
 {
   "name": "Texans",
   "ol": {
@@ -10708,6 +10731,7 @@
     "hittingPower": 61
   }
 },
+
 {
   "name": "Chiefs",
   "ol": {
@@ -10736,6 +10760,7 @@
     "hittingPower": 59
   }
 },
+
 {
   "name": "Cowboys",
   "ol": {
@@ -10764,6 +10789,7 @@
     "hittingPower": 59
   }
 },
+
 {
   "name": "Packers",
   "ol": {
@@ -10792,6 +10818,7 @@
     "hittingPower": 62
   }
 },
+
 {
   "name": "Saints",
   "ol": {
@@ -10820,6 +10847,7 @@
     "hittingPower": 59
   }
 },
+
 {
   "name": "49ers",
   "ol": {
@@ -10848,5 +10876,7 @@
     "hittingPower": 58
   }
 }
+  ]
+  
   ]
 }
