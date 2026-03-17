@@ -4,10 +4,10 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Snake Draft Room</title>
 
-<!-- ✅ FIXED SOCKET (CRITICAL) -->
-<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 
 <style>
 
@@ -17,19 +17,41 @@ background:#f0f0f0;
 margin:10px;
 }
 
-/* FIXED LAYOUT */
+/* DESKTOP LAYOUT */
+
 #layout{
 display:grid;
-grid-template-columns:300px 1fr 300px;
+grid-template-columns:1fr 2fr 1fr;
 gap:20px;
 }
 
+/* MOBILE TABS */
+
+#mobileTabs{
+display:none;
+margin-bottom:10px;
+}
+
+.tabBtn{
+padding:10px;
+border:none;
+background:#ddd;
+margin-right:5px;
+font-weight:bold;
+}
+
+.tabBtn.active{
+background:#888;
+color:white;
+}
+
 /* PLAYER LIST */
+
 #players{
 background:white;
 padding:10px;
-max-height:600px;
-overflow-y:auto;
+max-height:500px;
+overflow:auto;
 border-radius:6px;
 }
 
@@ -45,15 +67,16 @@ background:#eee;
 }
 
 /* POSITION COLORS */
+
 .qb{background:#ffd6d6}
 .rb{background:#d6ffd6}
 .wr{background:#d6e4ff}
 .te{background:#f0d6ff}
 .k{background:#fff3b0}
 .def{background:#e0e0e0}
-.ol{background:#ffe0b3}
 
 /* DRAFT BOARD */
+
 #board{
 background:white;
 padding:10px;
@@ -84,24 +107,74 @@ background:#e3e3e3;
 }
 
 /* HISTORY */
+
 #history{
 background:white;
 padding:10px;
-max-height:300px;
+max-height:250px;
 overflow:auto;
 border-radius:6px;
 }
 
+/* ROSTERS */
+
+#rosters{
+background:white;
+padding:10px;
+margin-top:10px;
+border-radius:6px;
+}
+
 /* BUTTONS */
+
 button{
 padding:8px;
 margin:2px;
 cursor:pointer;
 }
 
+/* TIMER */
+
 #timer{
 font-weight:bold;
 color:red;
+}
+
+/* PLAYER POPUP */
+
+#playerCard{
+display:none;
+position:fixed;
+top:10%;
+left:5%;
+width:90%;
+max-width:400px;
+background:white;
+border:2px solid black;
+padding:15px;
+z-index:1000;
+}
+
+/* MOBILE RESPONSIVE */
+
+@media (max-width:900px){
+
+#layout{
+grid-template-columns:1fr;
+}
+
+#mobileTabs{
+display:block;
+}
+
+.tabSection{
+display:none;
+}
+
+.tabSection.active{
+display:block;
+}
+
 }
 
 </style>
@@ -128,10 +201,17 @@ Draft Timer: <span id="timer">60</span>
 
 <br><br>
 
+<div id="mobileTabs">
+
+<button class="tabBtn active" onclick="openTab('playersTab')">Players</button>
+<button class="tabBtn" onclick="openTab('boardTab')">Board</button>
+<button class="tabBtn" onclick="openTab('historyTab')">History</button>
+
+</div>
+
 <div id="layout">
 
-<!-- PLAYERS -->
-<div>
+<div id="playersTab" class="tabSection active">
 
 <h3>Players</h3>
 
@@ -144,11 +224,13 @@ Draft Timer: <span id="timer">60</span>
 <button onclick="setFilter('TE')">TE</button>
 <button onclick="setFilter('K')">K</button>
 <button onclick="setFilter('DEF')">DEF</button>
-<button onclick="setFilter('OL')">OL</button>
 
 <br><br>
 
-Search<br>
+Search
+
+<br>
+
 <input id="search" onkeyup="render()">
 
 <br><br>
@@ -157,85 +239,86 @@ Search<br>
 
 </div>
 
-<!-- BOARD -->
-<div>
+<div id="boardTab" class="tabSection">
 
 <h3>Draft Board</h3>
+
 <div id="board"></div>
 
 </div>
 
-<!-- HISTORY -->
-<div>
+<div id="historyTab" class="tabSection">
 
 <h3>Draft History</h3>
+
 <div id="history"></div>
 
+<h3>Team Rosters</h3>
+
+<div id="rosters"></div>
+
 </div>
+
+</div>
+
+<div id="playerCard">
+
+<h3 id="cardName"></h3>
+
+<div id="cardStats"></div>
+
+<br>
+
+<button id="draftButton">Draft</button>
+
+<button onclick="closeCard()">Close</button>
 
 </div>
 
 <script>
 
-const socket = io()
+const socket=io()
 
-let state = {}
-let positionFilter = "ALL"
+let state={}
+let positionFilter="ALL"
 
-/* ✅ DEBUG CONNECTION */
-socket.on("connect", ()=>{
-  console.log("CONNECTED TO SERVER ✅")
+socket.on("state",s=>{
+state=s
+render()
 })
 
-socket.on("state", s=>{
-  console.log("STATE RECEIVED:", s)
-  state = s
-  render()
+socket.on("timer",t=>{
+document.getElementById("timer").innerText=t
 })
 
-socket.on("timer", t=>{
-  document.getElementById("timer").innerText = t
-})
+function openTab(tab){
 
-/* ---------- START ---------- */
+document.querySelectorAll(".tabSection").forEach(t=>t.classList.remove("active"))
+
+document.getElementById(tab).classList.add("active")
+
+document.querySelectorAll(".tabBtn").forEach(b=>b.classList.remove("active"))
+
+event.target.classList.add("active")
+
+}
 
 function start(){
 
-fetch("/players.json")
+fetch("players.json")
 .then(r=>r.json())
-.then(data=>{
+.then(players=>{
 
-  let players = data.players || data
+let teams=prompt("Enter team names separated by comma").split(",")
 
-  let input = prompt("Enter team names separated by comma")
+socket.emit("setup",{teams,players})
 
-  if(!input){
-    alert("You must enter team names")
-    return
-  }
-
-  let teams = input.split(",").map(t=>t.trim()).filter(t=>t)
-
-  if(teams.length < 2){
-    alert("Enter at least 2 teams")
-    return
-  }
-
-  console.log("STARTING DRAFT:", teams)
-
-  socket.emit("setup",{teams,players})
-
-})
-.catch(err=>{
-  console.error("players.json failed:", err)
 })
 
 }
 
-/* ---------- ACTIONS ---------- */
-
 function draft(name){
-socket.emit("draft", name)
+socket.emit("draft",name)
 }
 
 function pause(){
@@ -249,8 +332,6 @@ socket.emit("undo")
 function resetDraft(){
 socket.emit("setup",{teams:state.teams,players:state.players})
 }
-
-/* ---------- EXPORT ---------- */
 
 function exportDraft(){
 
@@ -267,11 +348,17 @@ for(let i=0;i<picks.length;i+=cols){
 let row=[round]
 
 for(let j=0;j<cols;j++){
-row.push(picks[i+j]||"")
+
+let index=i+j
+
+row.push(picks[index]||"")
+
 }
 
 csv+=row.join(",")+"\n"
+
 round++
+
 }
 
 let blob=new Blob([csv],{type:"text/csv"})
@@ -284,60 +371,68 @@ a.click()
 
 }
 
-/* ---------- FILTER ---------- */
+function showPlayerCard(player){
+
+document.getElementById("playerCard").style.display="block"
+
+document.getElementById("cardName").innerText=
+player.name+" ("+player.position+")"
+
+let stats=""
+
+for(let key in player){
+
+if(key==="name"||key==="position"||key==="team") continue
+
+stats+=key+": "+player[key]+"<br>"
+
+}
+
+document.getElementById("cardStats").innerHTML=stats
+
+document.getElementById("draftButton").onclick=function(){
+draft(player.name)
+closeCard()
+}
+
+}
+
+function closeCard(){
+document.getElementById("playerCard").style.display="none"
+}
 
 function setFilter(pos){
-positionFilter = pos
+positionFilter=pos
 render()
 }
 
-/* ---------- RENDER ---------- */
-
 function render(){
+
+let list=document.getElementById("players")
+list.innerHTML=""
+
+let search=document.getElementById("search").value.toLowerCase()
 
 if(!state.players) return
 
-let list = document.getElementById("players")
-list.innerHTML = ""
-
-let search = document.getElementById("search").value.toLowerCase()
-
-// PLAYERS
 state.players.forEach(p=>{
 
-if(positionFilter !== "ALL" && p.position !== positionFilter) return
+if(positionFilter!=="ALL" && p.position!==positionFilter) return
 if(state.drafted.includes(p.name)) return
 if(!p.name.toLowerCase().includes(search)) return
 
-let d = document.createElement("div")
-d.className = "player " + p.position.toLowerCase()
-d.innerText = p.name + " ("+p.position+")"
-d.onclick = ()=>draft(p.name)
+let d=document.createElement("div")
+
+d.className="player "+p.position.toLowerCase()
+
+d.innerText=p.name+" ("+p.position+")"
+
+d.onclick=()=>showPlayerCard(p)
 
 list.appendChild(d)
 
 })
 
-// OL VIEW
-if(positionFilter === "OL" && state.teamsData){
-
-state.teamsData.forEach(t=>{
-
-let d = document.createElement("div")
-d.className = "player ol"
-
-d.innerText =
-t.name +
-" | Run: " + t.ol.rushingPower +
-" | Pass: " + t.ol.hittingPower
-
-list.appendChild(d)
-
-})
-
-}
-
-// BOARD
 let board=document.getElementById("board")
 board.innerHTML=""
 
@@ -351,6 +446,7 @@ header.className="round"
 let roundHeader=document.createElement("div")
 roundHeader.className="cell header"
 roundHeader.innerText="Round"
+
 header.appendChild(roundHeader)
 
 teams.forEach(team=>{
@@ -372,15 +468,20 @@ row.className="round"
 let roundCell=document.createElement("div")
 roundCell.className="cell header"
 roundCell.innerText=r+1
+
 row.appendChild(roundCell)
 
 let cells=[]
 
 for(let c=0;c<cols;c++){
+
 let cell=document.createElement("div")
 cell.className="cell"
+
 cells.push(cell)
+
 row.appendChild(cell)
+
 }
 
 for(let i=0;i<cols;i++){
@@ -390,14 +491,15 @@ let pickIndex=r*cols+i
 if(!picks[pickIndex]) continue
 
 let teamIndex=state.draftOrder[pickIndex]
+
 cells[teamIndex].innerText=picks[pickIndex]
 
 }
 
 board.appendChild(row)
+
 }
 
-// HISTORY
 let history=document.getElementById("history")
 history.innerHTML=""
 
@@ -406,6 +508,7 @@ picks.forEach((p,i)=>{
 let team=teams[state.draftOrder[i]]
 
 let row=document.createElement("div")
+
 row.innerText=(i+1)+". "+team+" → "+p
 
 history.appendChild(row)
@@ -417,4 +520,5 @@ history.appendChild(row)
 </script>
 
 </body>
+
 </html>
