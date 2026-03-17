@@ -45,6 +45,7 @@ button{padding:8px;margin:2px;}
 <button onclick="pause()">Pause</button>
 <button onclick="undo()">Undo</button>
 <button onclick="resetDraft()">Reset Draft</button>
+<button onclick="exportCSV()">Export CSV</button>
 
 <br><br>
 
@@ -97,7 +98,6 @@ socket.on("timer", t=>{
 })
 
 function start(){
-
 fetch("/players.json")
 .then(r=>r.json())
 .then(data=>{
@@ -119,10 +119,27 @@ fetch("/players.json")
 })
 }
 
+/* ACTIONS */
+
+function pause(){ socket.emit("pause") }
+function undo(){ socket.emit("undo") }
+
+function resetDraft(){
+  socket.emit("setup",{
+    teams: state.teams,
+    players: state.players,
+    nflTeams: state.nflTeams
+  })
+}
+
+/* FILTER */
+
 function setFilter(p){
   positionFilter=p
   render()
 }
+
+/* RENDER */
 
 function render(){
 
@@ -131,30 +148,31 @@ list.innerHTML=""
 
 let search=document.getElementById("search").value.toLowerCase()
 
-/* TEAMS MODE */
+/* TEAMS */
 
 if(positionFilter==="TEAMS"){
 
-  (state.nflTeams||[]).forEach(t=>{
+(state.nflTeams||[]).forEach(t=>{
 
-    if(!t.name.toLowerCase().includes(search)) return
+if(!t.name.toLowerCase().includes(search)) return
 
-    let d=document.createElement("div")
-    d.className="player"
-    d.style.background="#fff3b0"
+let d=document.createElement("div")
+d.className="player"
+d.style.background="#fff3b0"
 
-    d.innerHTML=`
-      <strong>${t.name}</strong><br>
-      OL Rush: ${t.ol.rushingPower}<br>
-      OL Hit: ${t.ol.hittingPower}
-    `
+d.innerHTML=`
+<strong>${t.name}</strong><br>
+OL Rush: ${t.ol.rushingPower}<br>
+OL Hit: ${t.ol.hittingPower}
+`
 
-    d.onclick=()=>socket.emit("draft", t.name)
+d.onclick=()=>socket.emit("draft", t.name)
 
-    list.appendChild(d)
-  })
+list.appendChild(d)
 
-  return
+})
+
+return
 }
 
 /* PLAYERS */
@@ -248,6 +266,51 @@ row.innerText=(i+1)+". "+team+" → "+p
 history.appendChild(row)
 })
 
+}
+
+/* EXPORT CSV */
+
+function exportCSV(){
+
+let teams=state.teams||[]
+let picks=state.drafted||[]
+let order=state.draftOrder||[]
+
+let cols=teams.length
+let rows=[]
+
+rows.push(["Round",...teams])
+
+let totalRounds=Math.ceil(picks.length/cols)
+
+for(let r=0;r<totalRounds;r++){
+
+let row=[r+1]
+
+for(let c=0;c<cols;c++) row.push("")
+
+for(let i=0;i<cols;i++){
+let idx=r*cols+i
+if(!picks[idx]) continue
+
+let teamIndex=order[idx]
+row[teamIndex+1]=picks[idx]
+}
+
+rows.push(row)
+}
+
+let csv=rows.map(r=>r.join(",")).join("\n")
+
+let blob=new Blob([csv],{type:"text/csv"})
+let url=URL.createObjectURL(blob)
+
+let a=document.createElement("a")
+a.href=url
+a.download="draft.csv"
+a.click()
+
+URL.revokeObjectURL(url)
 }
 
 </script>
