@@ -7,7 +7,8 @@
 
 <title>Snake Draft Room</title>
 
-<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<!-- ✅ FIXED SOCKET -->
+<script src="/socket.io/socket.io.js"></script>
 
 <style>
 
@@ -17,35 +18,11 @@ background:#f0f0f0;
 margin:10px;
 }
 
-/* DESKTOP LAYOUT */
-
 #layout{
 display:grid;
 grid-template-columns:1fr 2fr 1fr;
 gap:20px;
 }
-
-/* MOBILE TABS */
-
-#mobileTabs{
-display:none;
-margin-bottom:10px;
-}
-
-.tabBtn{
-padding:10px;
-border:none;
-background:#ddd;
-margin-right:5px;
-font-weight:bold;
-}
-
-.tabBtn.active{
-background:#888;
-color:white;
-}
-
-/* PLAYER LIST */
 
 #players{
 background:white;
@@ -66,16 +43,12 @@ font-size:14px;
 background:#eee;
 }
 
-/* POSITION COLORS */
-
 .qb{background:#ffd6d6}
 .rb{background:#d6ffd6}
 .wr{background:#d6e4ff}
 .te{background:#f0d6ff}
 .k{background:#fff3b0}
 .def{background:#e0e0e0}
-
-/* DRAFT BOARD */
 
 #board{
 background:white;
@@ -85,9 +58,7 @@ overflow-x:auto;
 white-space:nowrap;
 }
 
-.round{
-display:flex;
-}
+.round{display:flex;}
 
 .cell{
 width:120px;
@@ -106,8 +77,6 @@ font-weight:bold;
 background:#e3e3e3;
 }
 
-/* HISTORY */
-
 #history{
 background:white;
 padding:10px;
@@ -116,65 +85,15 @@ overflow:auto;
 border-radius:6px;
 }
 
-/* ROSTERS */
-
-#rosters{
-background:white;
-padding:10px;
-margin-top:10px;
-border-radius:6px;
-}
-
-/* BUTTONS */
-
 button{
 padding:8px;
 margin:2px;
 cursor:pointer;
 }
 
-/* TIMER */
-
 #timer{
 font-weight:bold;
 color:red;
-}
-
-/* PLAYER POPUP */
-
-#playerCard{
-display:none;
-position:fixed;
-top:10%;
-left:5%;
-width:90%;
-max-width:400px;
-background:white;
-border:2px solid black;
-padding:15px;
-z-index:1000;
-}
-
-/* MOBILE RESPONSIVE */
-
-@media (max-width:900px){
-
-#layout{
-grid-template-columns:1fr;
-}
-
-#mobileTabs{
-display:block;
-}
-
-.tabSection{
-display:none;
-}
-
-.tabSection.active{
-display:block;
-}
-
 }
 
 </style>
@@ -189,7 +108,6 @@ display:block;
 <button onclick="pause()">Pause</button>
 <button onclick="undo()">Undo</button>
 <button onclick="resetDraft()">Reset Draft</button>
-<button onclick="exportDraft()">Export</button>
 
 <br><br>
 
@@ -201,36 +119,13 @@ Draft Timer: <span id="timer">60</span>
 
 <br><br>
 
-<div id="mobileTabs">
-
-<button class="tabBtn active" onclick="openTab('playersTab')">Players</button>
-<button class="tabBtn" onclick="openTab('boardTab')">Board</button>
-<button class="tabBtn" onclick="openTab('historyTab')">History</button>
-
-</div>
-
 <div id="layout">
 
-<div id="playersTab" class="tabSection active">
+<div>
 
 <h3>Players</h3>
 
-<h4>Position Filter</h4>
-
-<button onclick="setFilter('ALL')">All</button>
-<button onclick="setFilter('QB')">QB</button>
-<button onclick="setFilter('RB')">RB</button>
-<button onclick="setFilter('WR')">WR</button>
-<button onclick="setFilter('TE')">TE</button>
-<button onclick="setFilter('K')">K</button>
-<button onclick="setFilter('DEF')">DEF</button>
-
-<br><br>
-
-Search
-
-<br>
-
+Search<br>
 <input id="search" onkeyup="render()">
 
 <br><br>
@@ -239,77 +134,56 @@ Search
 
 </div>
 
-<div id="boardTab" class="tabSection">
+<div>
 
 <h3>Draft Board</h3>
-
 <div id="board"></div>
 
 </div>
 
-<div id="historyTab" class="tabSection">
+<div>
 
 <h3>Draft History</h3>
-
 <div id="history"></div>
 
-<h3>Team Rosters</h3>
-
-<div id="rosters"></div>
-
 </div>
-
-</div>
-
-<div id="playerCard">
-
-<h3 id="cardName"></h3>
-
-<div id="cardStats"></div>
-
-<br>
-
-<button id="draftButton">Draft</button>
-
-<button onclick="closeCard()">Close</button>
 
 </div>
 
 <script>
 
-const socket=io()
+const socket = io()
 
-let state={}
-let positionFilter="ALL"
+let state = {}
 
-socket.on("state",s=>{
-state=s
+socket.on("connect", ()=>{
+console.log("Connected to server ✅")
+})
+
+socket.on("state", s=>{
+state = s
 render()
 })
 
-socket.on("timer",t=>{
-document.getElementById("timer").innerText=t
+socket.on("timer", t=>{
+document.getElementById("timer").innerText = t
 })
-
-function openTab(tab){
-
-document.querySelectorAll(".tabSection").forEach(t=>t.classList.remove("active"))
-
-document.getElementById(tab).classList.add("active")
-
-document.querySelectorAll(".tabBtn").forEach(b=>b.classList.remove("active"))
-
-event.target.classList.add("active")
-
-}
 
 function start(){
 
-fetch("players.json")
+fetch("/players.json")
 .then(r=>r.json())
-.then(players=>{
+.then(data=>{
 
-let teams=prompt("Enter team names separated by comma").split(",")
+let players = data.players || data
+
+let input = prompt("Enter team names separated by comma")
+
+if(!input) return alert("Enter teams!")
+
+let teams = input.split(",").map(t=>t.trim()).filter(t=>t)
+
+if(teams.length < 2) return alert("Need at least 2 teams!")
 
 socket.emit("setup",{teams,players})
 
@@ -318,7 +192,7 @@ socket.emit("setup",{teams,players})
 }
 
 function draft(name){
-socket.emit("draft",name)
+socket.emit("draft", name)
 }
 
 function pause(){
@@ -333,101 +207,26 @@ function resetDraft(){
 socket.emit("setup",{teams:state.teams,players:state.players})
 }
 
-function exportDraft(){
-
-let teams=state.teams
-let picks=state.drafted
-let cols=teams.length
-
-let csv="Round,"+teams.join(",")+"\n"
-
-let round=1
-
-for(let i=0;i<picks.length;i+=cols){
-
-let row=[round]
-
-for(let j=0;j<cols;j++){
-
-let index=i+j
-
-row.push(picks[index]||"")
-
-}
-
-csv+=row.join(",")+"\n"
-
-round++
-
-}
-
-let blob=new Blob([csv],{type:"text/csv"})
-let url=URL.createObjectURL(blob)
-
-let a=document.createElement("a")
-a.href=url
-a.download="draft.csv"
-a.click()
-
-}
-
-function showPlayerCard(player){
-
-document.getElementById("playerCard").style.display="block"
-
-document.getElementById("cardName").innerText=
-player.name+" ("+player.position+")"
-
-let stats=""
-
-for(let key in player){
-
-if(key==="name"||key==="position"||key==="team") continue
-
-stats+=key+": "+player[key]+"<br>"
-
-}
-
-document.getElementById("cardStats").innerHTML=stats
-
-document.getElementById("draftButton").onclick=function(){
-draft(player.name)
-closeCard()
-}
-
-}
-
-function closeCard(){
-document.getElementById("playerCard").style.display="none"
-}
-
-function setFilter(pos){
-positionFilter=pos
-render()
-}
-
 function render(){
+
+if(!state.players) return
 
 let list=document.getElementById("players")
 list.innerHTML=""
 
 let search=document.getElementById("search").value.toLowerCase()
 
-if(!state.players) return
-
 state.players.forEach(p=>{
 
-if(positionFilter!=="ALL" && p.position!==positionFilter) return
 if(state.drafted.includes(p.name)) return
 if(!p.name.toLowerCase().includes(search)) return
 
 let d=document.createElement("div")
 
-d.className="player "+p.position.toLowerCase()
-
+d.className="player"
 d.innerText=p.name+" ("+p.position+")"
 
-d.onclick=()=>showPlayerCard(p)
+d.onclick=()=>draft(p.name)
 
 list.appendChild(d)
 
@@ -468,51 +267,40 @@ row.className="round"
 let roundCell=document.createElement("div")
 roundCell.className="cell header"
 roundCell.innerText=r+1
-
 row.appendChild(roundCell)
 
 let cells=[]
 
 for(let c=0;c<cols;c++){
-
 let cell=document.createElement("div")
 cell.className="cell"
-
 cells.push(cell)
-
 row.appendChild(cell)
-
 }
 
 for(let i=0;i<cols;i++){
 
 let pickIndex=r*cols+i
-
 if(!picks[pickIndex]) continue
 
 let teamIndex=state.draftOrder[pickIndex]
-
 cells[teamIndex].innerText=picks[pickIndex]
 
 }
 
 board.appendChild(row)
-
 }
 
 let history=document.getElementById("history")
 history.innerHTML=""
 
 picks.forEach((p,i)=>{
-
 let team=teams[state.draftOrder[i]]
 
 let row=document.createElement("div")
-
 row.innerText=(i+1)+". "+team+" → "+p
 
 history.appendChild(row)
-
 })
 
 }
