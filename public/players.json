@@ -10634,37 +10634,24 @@
     "position": "P",
     "team": "Dolphins",
     "name": "Brandon Fields",
-    "running_speed.1": 25.0,
+    "running_speed": 25.0,
     "hitting_power.1": 25.0,
-    "kicking_ability": 50.0,
+    "kicking_ability.1": 50.0,
     "avoid_kick_block": 50.0,
     "sim_kicking_ability": 6.0
   },
-  {
-"teams": [
-{
-"name": "Bills",
-"ol": {
-"rushingPower": 69,
-"hittingPower": 55
+    ],
+  "teams": [
+    {
+      "name": "Bills",
+      "ol": {
+        "rushingPower": 69,
+        "hittingPower": 55
+      }
+    }
+  ]
 }
-},
-{
-"name": "Ravens",
-"ol": {
-"rushingPower": 69,
-"hittingPower": 64
-}
-},
-{
-"name": "Saints",
-"ol": {
-"rushingPower": 69,
-"hittingPower": 61
-}
-}
-]
-}
+  
 
   
 
