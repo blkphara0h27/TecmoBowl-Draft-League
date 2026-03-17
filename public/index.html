@@ -84,7 +84,7 @@ socket.on("timer", t=>{
 
 function start(){
 
-fetch("players.json")
+fetch("/players.json")
 .then(r=>{
   if(!r.ok) throw new Error("players.json missing")
   return r.json()
