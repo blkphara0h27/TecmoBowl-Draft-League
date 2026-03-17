@@ -2,12 +2,15 @@
 <html>
 
 <head>
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Snake Draft Room</title>
 
+<!-- ✅ CRITICAL FIX: USE LOCAL SOCKET -->
 <script src="/socket.io/socket.io.js"></script>
 
 <style>
+
 body{
 font-family:Arial;
 background:#f0f0f0;
@@ -34,7 +37,9 @@ border-bottom:1px solid #ddd;
 cursor:pointer;
 }
 
-.player:hover{ background:#eee; }
+.player:hover{
+background:#eee;
+}
 
 .qb{background:#ffd6d6}
 .rb{background:#d6ffd6}
@@ -77,14 +82,6 @@ overflow:auto;
 border-radius:6px;
 }
 
-#teamsView{
-background:white;
-padding:10px;
-margin-top:10px;
-border-radius:6px;
-display:none;
-}
-
 #timer{
 color:red;
 font-weight:bold;
@@ -108,7 +105,9 @@ padding:8px;
 margin:2px;
 cursor:pointer;
 }
+
 </style>
+
 </head>
 
 <body>
@@ -119,7 +118,6 @@ cursor:pointer;
 <button onclick="pause()">Pause</button>
 <button onclick="undo()">Undo</button>
 <button onclick="resetDraft()">Reset Draft</button>
-<button onclick="showTeams()">Teams</button>
 
 <br><br>
 
@@ -139,6 +137,7 @@ Draft Timer: <span id="timer">60</span>
 <br><br>
 
 <input id="search" onkeyup="render()" placeholder="Search...">
+
 <div id="players"></div>
 </div>
 
@@ -150,8 +149,6 @@ Draft Timer: <span id="timer">60</span>
 <div>
 <h3>History</h3>
 <div id="history"></div>
-
-<div id="teamsView"></div>
 </div>
 
 </div>
@@ -166,6 +163,7 @@ Draft Timer: <span id="timer">60</span>
 
 <script>
 
+// ✅ SOCKET SAFE INIT
 if (typeof io === "undefined") {
   alert("Socket.io failed to load")
 }
@@ -191,32 +189,45 @@ socket.on("timer", t=>{
 function start(){
 
 fetch("/players.json")
-.then(r=>r.json())
+.then(r=>{
+  if(!r.ok) throw new Error("players.json not found")
+  return r.json()
+})
 .then(data=>{
 
   let players = data.players
 
+  if(!players || !Array.isArray(players)){
+    alert("Players file broken")
+    return
+  }
+
   let input = prompt("Enter team names separated by comma")
   if(!input) return
 
-  // 🔥 NOW CREATES TEAM OBJECTS
-  let teams = input.split(",").map(t=>({
-    name: t.trim(),
-    ol: {
-      rushingPower: Math.floor(Math.random()*20)+60,
-      hittingPower: Math.floor(Math.random()*20)+60
-    }
-  }))
+  let teams = input.split(",").map(t=>t.trim()).filter(t=>t)
+
+  if(teams.length < 2){
+    alert("Need at least 2 teams")
+    return
+  }
 
   socket.emit("setup",{teams,players})
 
+})
+.catch(err=>{
+  console.error(err)
+  alert("Error loading players.json")
 })
 
 }
 
 /* ---------- ACTIONS ---------- */
 
-function draft(name){ socket.emit("draft", name) }
+function draft(name){
+  socket.emit("draft", name)
+}
+
 function pause(){ socket.emit("pause") }
 function undo(){ socket.emit("undo") }
 
@@ -253,55 +264,6 @@ function closeCard(){
 document.getElementById("playerCard").style.display="none"
 }
 
-/* ---------- TEAMS VIEW ---------- */
-
-function showTeams(){
-
-let container = document.getElementById("teamsView")
-
-if(container.style.display === "block"){
-  container.style.display = "none"
-  return
-}
-
-container.style.display = "block"
-container.innerHTML = "<h3>Teams</h3>"
-
-let teams = state.teams || []
-let picks = state.drafted || []
-
-let teamMap = {}
-
-teams.forEach(t => teamMap[t.name] = [])
-
-picks.forEach((playerName, i) => {
-  let teamIndex = state.draftOrder[i]
-  let teamName = teams[teamIndex]?.name
-
-  if(teamName){
-    teamMap[teamName].push(playerName)
-  }
-})
-
-for(let team in teamMap){
-
-  let teamObj = teams.find(t=>t.name===team)
-
-  let div = document.createElement("div")
-
-  div.innerHTML = `
-    <strong>${team}</strong><br>
-    OL Rush: ${teamObj.ol.rushingPower} |
-    OL Hit: ${teamObj.ol.hittingPower}<br><br>
-    ${teamMap[team].join("<br>") || "No players"}
-    <br><br>
-  `
-
-  container.appendChild(div)
-}
-
-}
-
 /* ---------- FILTER ---------- */
 
 function setFilter(pos){
@@ -313,7 +275,7 @@ render()
 
 function render(){
 
-if(!state.players) return
+if(!state.players || !Array.isArray(state.players)) return
 
 let list=document.getElementById("players")
 list.innerHTML=""
@@ -358,7 +320,7 @@ header.appendChild(roundHeader)
 teams.forEach(team=>{
 let cell=document.createElement("div")
 cell.className="cell header"
-cell.innerText=team.name
+cell.innerText=team
 header.appendChild(cell)
 })
 
@@ -404,7 +366,7 @@ let history=document.getElementById("history")
 history.innerHTML=""
 
 picks.forEach((p,i)=>{
-let team=teams[state.draftOrder[i]]?.name
+let team=teams[state.draftOrder[i]]
 
 let row=document.createElement("div")
 row.innerText=(i+1)+". "+team+" → "+p
