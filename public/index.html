@@ -8,56 +8,64 @@
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 
 <style>
-body{font-family:Arial;background:#f0f0f0;margin:10px;}
+body{
+font-family:Arial;
+background:#f0f0f0;
+margin:10px;
+}
 
-#layout{display:grid;grid-template-columns:1fr 2fr 1fr;gap:20px;}
+#layout{
+display:grid;
+grid-template-columns:1fr 2fr 1fr;
+gap:20px;
+}
 
-#mobileTabs{display:none;margin-bottom:10px;}
+#players, #board, #history, #rosters{
+background:white;
+padding:10px;
+border-radius:6px;
+}
 
-.tabBtn{padding:10px;border:none;background:#ddd;margin-right:5px;font-weight:bold;}
-.tabBtn.active{background:#888;color:white;}
+#players{
+max-height:500px;
+overflow:auto;
+}
 
-#players{background:white;padding:10px;max-height:500px;overflow:auto;border-radius:6px;}
+.player{
+padding:10px;
+border-bottom:1px solid #ddd;
+cursor:pointer;
+}
 
-.player{padding:12px;border-bottom:1px solid #ddd;cursor:pointer;font-size:14px;}
-.player:hover{background:#eee;}
-
-.qb{background:#ffd6d6}
-.rb{background:#d6ffd6}
-.wr{background:#d6e4ff}
-.te{background:#f0d6ff}
-.k{background:#fff3b0}
-.def{background:#e0e0e0}
-
-#board{background:white;padding:10px;border-radius:6px;overflow-x:auto;white-space:nowrap;}
-
-.round{display:flex;}
+.player:hover{
+background:#eee;
+}
 
 .cell{
-width:120px;border:1px solid #ccc;padding:6px;font-size:12px;
-height:45px;display:flex;align-items:center;justify-content:center;text-align:center;
+width:120px;
+border:1px solid #ccc;
+padding:5px;
+text-align:center;
 }
 
-.header{font-weight:bold;background:#e3e3e3;}
-
-#history{background:white;padding:10px;max-height:250px;overflow:auto;border-radius:6px;}
-
-#rosters{background:white;padding:10px;margin-top:10px;border-radius:6px;}
-
-button{padding:8px;margin:2px;cursor:pointer;}
-
-#timer{font-weight:bold;color:red;}
-
-#playerCard{
-display:none;position:fixed;top:10%;left:5%;width:90%;
-max-width:400px;background:white;border:2px solid black;padding:15px;z-index:1000;
+.round{
+display:flex;
 }
 
-@media (max-width:900px){
-#layout{grid-template-columns:1fr;}
-#mobileTabs{display:block;}
-.tabSection{display:none;}
-.tabSection.active{display:block;}
+.header{
+font-weight:bold;
+background:#ddd;
+}
+
+button{
+margin:2px;
+padding:6px;
+cursor:pointer;
+}
+
+#timer{
+color:red;
+font-weight:bold;
 }
 </style>
 </head>
@@ -74,24 +82,12 @@ max-width:400px;background:white;border:2px solid black;padding:15px;z-index:100
 
 <br><br>
 
-Current Pick: <span id="current"></span>
-<br>
+Current Pick: <span id="current"></span><br>
 Draft Timer: <span id="timer">60</span>
 
 <br><br>
 
-<div id="mobileTabs">
-<button class="tabBtn active" onclick="openTab('playersTab',event)">Players</button>
-<button class="tabBtn" onclick="openTab('boardTab',event)">Board</button>
-<button class="tabBtn" onclick="openTab('historyTab',event)">History</button>
-</div>
-
-<div id="layout">
-
-<div id="playersTab" class="tabSection active">
 <h3>Players</h3>
-
-<h4>Position Filter</h4>
 
 <button onclick="setFilter('ALL')">All</button>
 <button onclick="setFilter('QB')">QB</button>
@@ -100,22 +96,23 @@ Draft Timer: <span id="timer">60</span>
 <button onclick="setFilter('TE')">TE</button>
 <button onclick="setFilter('K')">K</button>
 <button onclick="setFilter('DEF')">DEF</button>
+<button onclick="showOL()">OL</button>
 
 <br><br>
 
 Search<br>
 <input id="search" onkeyup="render()">
 
-<br><br>
-<div id="players"></div>
-</div>
+<div id="layout">
 
-<div id="boardTab" class="tabSection">
+<div id="players"></div>
+
+<div>
 <h3>Draft Board</h3>
 <div id="board"></div>
 </div>
 
-<div id="historyTab" class="tabSection">
+<div>
 <h3>Draft History</h3>
 <div id="history"></div>
 
@@ -125,130 +122,120 @@ Search<br>
 
 </div>
 
-<div id="playerCard">
-<h3 id="cardName"></h3>
-<div id="cardStats"></div>
-<br>
-<button id="draftButton">Draft</button>
-<button onclick="closeCard()">Close</button>
-</div>
-
 <script>
+
 const socket = io()
 
 let state = {}
-let positionFilter = "ALL"
+let filter = "ALL"
 
-// ✅ LOAD LOCAL SAVE
-window.onload = () => {
-  const saved = localStorage.getItem("draftState")
-  if(saved){
-    state = JSON.parse(saved)
-    render()
-  }
-}
-
-// ✅ RECEIVE SERVER STATE
-socket.on("state", s => {
+socket.on("state", s=>{
   state = s
-
-  // 💾 SAVE LOCALLY
-  localStorage.setItem("draftState", JSON.stringify(state))
-
   render()
 })
 
-socket.on("timer", t => {
+socket.on("timer", t=>{
   document.getElementById("timer").innerText = t
 })
 
-// ---------------- FUNCTIONS ----------------
-
-function openTab(tab,e){
-  document.querySelectorAll(".tabSection").forEach(t=>t.classList.remove("active"))
-  document.getElementById(tab).classList.add("active")
-  document.querySelectorAll(".tabBtn").forEach(b=>b.classList.remove("active"))
-  e.target.classList.add("active")
-}
+/* ---------- START ---------- */
 
 function start(){
-  fetch("players.json")
-  .then(r=>r.json())
-  .then(players=>{
-    let input = prompt("Enter team names separated by comma")
-    if(!input) return
-    let teams = input.split(",").map(t=>t.trim())
-    socket.emit("setup",{teams,players})
+  let input = prompt("Enter team names separated by comma")
+  if(!input) return
+
+  let teams = input.split(",").map(t=>t.trim())
+
+  socket.emit("setup",{teams})
+}
+
+/* ---------- ACTIONS ---------- */
+
+function draft(name){
+  socket.emit("draft",name)
+}
+
+function pause(){
+  socket.emit("pause")
+}
+
+function undo(){
+  socket.emit("undo")
+}
+
+function resetDraft(){
+  socket.emit("setup",{teams:state.teams})
+}
+
+/* ---------- FILTER ---------- */
+
+function setFilter(f){
+  filter = f
+  render()
+}
+
+/* ---------- OL VIEW ---------- */
+
+function showOL(){
+
+  let list = document.getElementById("players")
+  list.innerHTML=""
+
+  if(!state.teamsData) return
+
+  state.teamsData.forEach(t=>{
+
+    let d=document.createElement("div")
+    d.className="player"
+
+    d.innerText =
+      t.name +
+      " | Run: " + t.ol.rushingPower +
+      " | Pass: " + t.ol.hittingPower
+
+    list.appendChild(d)
+
   })
 }
 
-function draft(name){ socket.emit("draft",name) }
-function pause(){ socket.emit("pause") }
-function undo(){ socket.emit("undo") }
-
-function resetDraft(){
-  if(!state.teams) return
-  socket.emit("setup",{teams:state.teams,players:state.players})
-}
+/* ---------- EXPORT ---------- */
 
 function exportDraft(){
-  let teams=state.teams||[]
-  let picks=state.drafted||[]
+
+  let teams=state.teams
+  let picks=state.drafted
   let cols=teams.length
 
   let csv="Round,"+teams.join(",")+"\n"
+
   let round=1
 
   for(let i=0;i<picks.length;i+=cols){
+
     let row=[round]
+
     for(let j=0;j<cols;j++){
       row.push(picks[i+j]||"")
     }
+
     csv+=row.join(",")+"\n"
     round++
   }
 
   let blob=new Blob([csv])
+  let url=URL.createObjectURL(blob)
+
   let a=document.createElement("a")
-  a.href=URL.createObjectURL(blob)
+  a.href=url
   a.download="draft.csv"
   a.click()
 }
 
-// ---------------- PLAYER CARD ----------------
-
-function showPlayerCard(player){
-  document.getElementById("playerCard").style.display="block"
-  document.getElementById("cardName").innerText = player.name+" ("+player.position+")"
-
-  let stats=""
-  for(let key in player){
-    if(key==="name"||key==="position"||key==="team") continue
-    stats+=key+": "+player[key]+"<br>"
-  }
-
-  document.getElementById("cardStats").innerHTML=stats
-
-  document.getElementById("draftButton").onclick=function(){
-    draft(player.name)
-    closeCard()
-  }
-}
-
-function closeCard(){
-  document.getElementById("playerCard").style.display="none"
-}
-
-function setFilter(pos){
-  positionFilter=pos
-  render()
-}
-
-// ---------------- RENDER ----------------
+/* ---------- RENDER ---------- */
 
 function render(){
 
-  document.getElementById("current").innerText = (state.currentPick || 0) + 1
+  console.log(state)
 
   let list=document.getElementById("players")
   list.innerHTML=""
@@ -258,18 +245,23 @@ function render(){
   if(!state.players) return
 
   state.players.forEach(p=>{
-    if(positionFilter!=="ALL" && p.position!==positionFilter) return
-    if(state.drafted && state.drafted.includes(p.name)) return
+
+    if(filter!=="ALL" && p.position!==filter) return
+    if(state.drafted.includes(p.name)) return
     if(!p.name.toLowerCase().includes(search)) return
 
     let d=document.createElement("div")
-    d.className="player "+p.position.toLowerCase()
+    d.className="player"
+
     d.innerText=p.name+" ("+p.position+")"
-    d.onclick=()=>showPlayerCard(p)
+
+    d.onclick=()=>draft(p.name)
+
     list.appendChild(d)
   })
 
-  // BOARD
+  /* BOARD */
+
   let board=document.getElementById("board")
   board.innerHTML=""
 
@@ -277,35 +269,39 @@ function render(){
   let picks=state.drafted||[]
   let cols=teams.length
 
+  if(cols===0) return
+
   let header=document.createElement("div")
   header.className="round"
 
-  let roundHeader=document.createElement("div")
-  roundHeader.className="cell header"
-  roundHeader.innerText="Round"
-  header.appendChild(roundHeader)
+  let rCell=document.createElement("div")
+  rCell.className="cell header"
+  rCell.innerText="Round"
+  header.appendChild(rCell)
 
-  teams.forEach(team=>{
-    let cell=document.createElement("div")
-    cell.className="cell header"
-    cell.innerText=team
-    header.appendChild(cell)
+  teams.forEach(t=>{
+    let c=document.createElement("div")
+    c.className="cell header"
+    c.innerText=t
+    header.appendChild(c)
   })
 
   board.appendChild(header)
 
-  let totalRounds=Math.ceil(picks.length/(cols||1))
+  let rounds=Math.ceil(picks.length/cols)
 
-  for(let r=0;r<totalRounds;r++){
+  for(let r=0;r<rounds;r++){
+
     let row=document.createElement("div")
     row.className="round"
 
-    let roundCell=document.createElement("div")
-    roundCell.className="cell header"
-    roundCell.innerText=r+1
-    row.appendChild(roundCell)
+    let rc=document.createElement("div")
+    rc.className="cell header"
+    rc.innerText=r+1
+    row.appendChild(rc)
 
     let cells=[]
+
     for(let c=0;c<cols;c++){
       let cell=document.createElement("div")
       cell.className="cell"
@@ -314,24 +310,26 @@ function render(){
     }
 
     for(let i=0;i<cols;i++){
-      let pickIndex=r*cols+i
-      if(!picks[pickIndex]) continue
-      let teamIndex=state.draftOrder[pickIndex]
-      if(cells[teamIndex]) cells[teamIndex].innerText=picks[pickIndex]
+      let idx=r*cols+i
+      if(!picks[idx]) continue
+
+      let teamIndex=state.draftOrder[idx]
+      cells[teamIndex].innerText=picks[idx]
     }
 
     board.appendChild(row)
   }
 
-  // HISTORY
+  /* HISTORY */
+
   let history=document.getElementById("history")
   history.innerHTML=""
 
   picks.forEach((p,i)=>{
-    let team=teams[state.draftOrder?.[i]]
-    let row=document.createElement("div")
-    row.innerText=(i+1)+". "+team+" → "+p
-    history.appendChild(row)
+    let t=teams[state.draftOrder[i]]
+    let d=document.createElement("div")
+    d.innerText=(i+1)+". "+t+" → "+p
+    history.appendChild(d)
   })
 }
 
