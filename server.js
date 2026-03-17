@@ -9,157 +9,186 @@ const io = new Server(server)
 
 app.use(express.static("public"))
 
-let teams = []
-let players = []
-let drafted = []
-let currentPick = 0
-let draftOrder = []
+let teams=[]
+let players=[]
+let drafted=[]
+let currentPick=0
+let draftOrder=[]
+let timer=60
+let interval=null
 
-let timer = 60
-let interval = null
-
-/* ---------- LOAD SAVE ---------- */
+/* ---------- LOAD SAVED DRAFT ---------- */
 
 function loadDraft(){
-  try{
-    if(fs.existsSync("draft.json")){
-      let data = JSON.parse(fs.readFileSync("draft.json"))
-      teams = data.teams || []
-      players = data.players || []
-      drafted = data.drafted || []
-      currentPick = data.currentPick || 0
-      draftOrder = data.draftOrder || []
-    }
-  }catch(e){
-    console.log("Load error:", e)
-  }
+
+if(fs.existsSync("draft.json")){
+
+let data=JSON.parse(fs.readFileSync("draft.json"))
+
+teams=data.teams||[]
+players=data.players||[]
+drafted=data.drafted||[]
+currentPick=data.currentPick||0
+draftOrder=data.draftOrder||[]
+
 }
+
+}
+
 loadDraft()
 
+/* ---------- SAVE DRAFT ---------- */
+
 function saveDraft(){
-  fs.writeFileSync("draft.json", JSON.stringify({
-    teams, players, drafted, currentPick, draftOrder
-  }, null, 2))
+
+let data={
+teams,
+players,
+drafted,
+currentPick,
+draftOrder
 }
 
-/* ---------- SNAKE ---------- */
+fs.writeFileSync("draft.json",JSON.stringify(data,null,2))
 
-function snakeOrder(teamCount, rounds){
-  let order = []
+}
 
-  for(let r=0;r<rounds;r++){
-    if(r % 2 === 0){
-      for(let i=0;i<teamCount;i++) order.push(i)
-    } else {
-      for(let i=teamCount-1;i>=0;i--) order.push(i)
-    }
-  }
+/* ---------- CREATE SNAKE ORDER ---------- */
 
-  return order
+function snakeOrder(teamCount,rounds){
+
+let order=[]
+
+for(let r=0;r<rounds;r++){
+
+if(r%2===0){
+
+for(let i=0;i<teamCount;i++) order.push(i)
+
+}else{
+
+for(let i=teamCount-1;i>=0;i--) order.push(i)
+
+}
+
+}
+
+return order
+
 }
 
 /* ---------- TIMER ---------- */
 
 function startTimer(){
-  clearInterval(interval)
-  timer = 60
 
-  interval = setInterval(()=>{
-    timer--
-    io.emit("timer", timer)
+clearInterval(interval)
 
-    if(timer <= 0){
-      autoPick()
-    }
-  },1000)
+timer=60
+
+interval=setInterval(()=>{
+
+timer--
+
+io.emit("timer",timer)
+
+if(timer<=0){
+
+autoPick()
+
+}
+
+},1000)
+
 }
 
 /* ---------- AUTO PICK ---------- */
 
 function autoPick(){
-  let available = players.filter(p => !drafted.includes(p.name))
-  if(!available.length) return
 
-  let pick = available[0]
+let available=players.filter(p=>!drafted.includes(p.name))
 
-  drafted.push(pick.name)
-  currentPick++
+if(available.length===0) return
 
-  saveDraft()
-  io.emit("state",{teams,players,drafted,currentPick,draftOrder})
+let pick=available[0]
 
-  startTimer()
+drafted.push(pick.name)
+
+currentPick++
+
+saveDraft()
+
+io.emit("state",{teams,players,drafted,currentPick,draftOrder})
+
+startTimer()
+
 }
 
-/* ---------- SOCKET ---------- */
+/* ---------- SOCKET CONNECTION ---------- */
 
-io.on("connection", socket => {
+io.on("connection",socket=>{
 
-  console.log("Client connected")
+socket.emit("state",{teams,players,drafted,currentPick,draftOrder})
 
-  // ✅ Always send current state on reload
-  socket.emit("state",{teams,players,drafted,currentPick,draftOrder})
+socket.on("setup",data=>{
 
-  socket.on("setup", data => {
+teams=data.teams
+players=data.players
 
-    if(!data || !data.teams){
-      console.log("Invalid setup ❌")
-      return
-    }
+drafted=[]
+currentPick=0
 
-    teams = data.teams
+draftOrder=snakeOrder(teams.length,20)
 
-    // ✅ FIX: ensure correct player format
-    if(Array.isArray(data.players)){
-      players = data.players
-    } else {
-      console.log("Players format invalid ❌")
-      return
-    }
+saveDraft()
 
-    drafted = []
-    currentPick = 0
-    draftOrder = snakeOrder(teams.length, 20)
+startTimer()
 
-    saveDraft()
-    startTimer()
-
-    io.emit("state",{teams,players,drafted,currentPick,draftOrder})
-  })
-
-  socket.on("draft", name => {
-
-    if(drafted.includes(name)) return
-
-    drafted.push(name)
-    currentPick++
-
-    saveDraft()
-    startTimer()
-
-    io.emit("state",{teams,players,drafted,currentPick,draftOrder})
-  })
-
-  socket.on("undo", () => {
-
-    if(!drafted.length) return
-
-    drafted.pop()
-    currentPick--
-
-    saveDraft()
-
-    io.emit("state",{teams,players,drafted,currentPick,draftOrder})
-  })
-
-  socket.on("pause", () => {
-    clearInterval(interval)
-  })
+io.emit("state",{teams,players,drafted,currentPick,draftOrder})
 
 })
 
-/* ---------- START ---------- */
+socket.on("draft",player=>{
 
-server.listen(3000,()=>{
-  console.log("Server running http://localhost:3000 🚀")
+if(drafted.includes(player)) return
+
+drafted.push(player)
+
+currentPick++
+
+saveDraft()
+
+startTimer()
+
+io.emit("state",{teams,players,drafted,currentPick,draftOrder})
+
+})
+
+socket.on("undo",()=>{
+
+drafted.pop()
+
+currentPick--
+
+saveDraft()
+
+io.emit("state",{teams,players,drafted,currentPick,draftOrder})
+
+})
+
+socket.on("pause",()=>{
+
+clearInterval(interval)
+
+})
+
+})
+
+/* ---------- SERVER START ---------- */
+
+const PORT=process.env.PORT||3000
+
+server.listen(PORT,()=>{
+
+console.log("Draft server running")
+
 })
