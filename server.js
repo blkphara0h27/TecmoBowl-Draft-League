@@ -9,23 +9,14 @@ const io = new Server(server)
 
 app.use(express.static("public"))
 
-let teams = []        // 👈 draft users
-let nflTeams = []     // 👈 teams from JSON
+let teams = []        // draft users
+let nflTeams = []     // NFL teams
 let players = []
 let drafted = []
 let currentPick = 0
 let draftOrder = []
 let timer = 60
 let interval = null
-
-/* ---------- SAVE ---------- */
-
-function saveDraft(){
-  let data = { teams, nflTeams, players, drafted, currentPick, draftOrder }
-  fs.writeFileSync("draft.json", JSON.stringify(data, null, 2))
-}
-
-/* ---------- SNAKE ORDER ---------- */
 
 function snakeOrder(teamCount, rounds){
   let order = []
@@ -38,8 +29,6 @@ function snakeOrder(teamCount, rounds){
   }
   return order
 }
-
-/* ---------- TIMER ---------- */
 
 function startTimer(){
   clearInterval(interval)
@@ -56,25 +45,16 @@ function startTimer(){
   }, 1000)
 }
 
-/* ---------- AUTO PICK ---------- */
-
 function autoPick(){
   let available = players.filter(p => !drafted.includes(p.name))
   if(!available.length) return
 
-  let pick = available[0]
-
-  drafted.push(pick.name)
+  drafted.push(available[0].name)
   currentPick++
 
-  saveDraft()
-
   io.emit("state", { teams, nflTeams, players, drafted, currentPick, draftOrder })
-
   startTimer()
 }
-
-/* ---------- SOCKET ---------- */
 
 io.on("connection", socket => {
 
@@ -82,10 +62,8 @@ io.on("connection", socket => {
 
   socket.on("setup", data => {
 
-    if(!data) return
-
-    teams = data.teams || []          // draft users
-    nflTeams = data.nflTeams || []    // NFL teams
+    teams = data.teams || []
+    nflTeams = data.nflTeams || []
     players = data.players || []
 
     drafted = []
@@ -93,20 +71,19 @@ io.on("connection", socket => {
 
     draftOrder = snakeOrder(teams.length, 20)
 
-    saveDraft()
     startTimer()
 
     io.emit("state", { teams, nflTeams, players, drafted, currentPick, draftOrder })
-
   })
 
   socket.on("draft", name => {
-    if(!name || drafted.includes(name)) return
+
+    if(!name) return
+    if(drafted.includes(name)) return
 
     drafted.push(name)
     currentPick++
 
-    saveDraft()
     startTimer()
 
     io.emit("state", { teams, nflTeams, players, drafted, currentPick, draftOrder })
@@ -117,12 +94,12 @@ io.on("connection", socket => {
     drafted.pop()
     currentPick--
 
-    saveDraft()
     io.emit("state", { teams, nflTeams, players, drafted, currentPick, draftOrder })
   })
 
   socket.on("pause", () => {
     clearInterval(interval)
+    interval = null
   })
 
 })
