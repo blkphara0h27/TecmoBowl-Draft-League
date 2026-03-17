@@ -7,7 +7,6 @@ const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
 
-// ✅ Serve public folder
 app.use(express.static("public"))
 
 let teams = []
@@ -18,76 +17,38 @@ let draftOrder = []
 let timer = 60
 let interval = null
 
-/* ---------- LOAD SAVED DRAFT ---------- */
-
-function loadDraft(){
-
-  if(fs.existsSync("draft.json")){
-
-    let data = JSON.parse(fs.readFileSync("draft.json"))
-
-    teams = data.teams || []
-    players = data.players || []
-    drafted = data.drafted || []
-    currentPick = data.currentPick || 0
-    draftOrder = data.draftOrder || []
-
-    console.log("Draft loaded ✅")
-
-  }
-
-}
-
-loadDraft()
-
-/* ---------- SAVE DRAFT ---------- */
+/* ---------- SAVE ---------- */
 
 function saveDraft(){
-
-  let data = {
-    teams,
-    players,
-    drafted,
-    currentPick,
-    draftOrder
-  }
-
+  let data = { teams, players, drafted, currentPick, draftOrder }
   fs.writeFileSync("draft.json", JSON.stringify(data, null, 2))
-
 }
 
-/* ---------- CREATE SNAKE ORDER ---------- */
+/* ---------- SNAKE ORDER ---------- */
 
 function snakeOrder(teamCount, rounds){
-
   let order = []
 
   for(let r = 0; r < rounds; r++){
-
     if(r % 2 === 0){
       for(let i = 0; i < teamCount; i++) order.push(i)
     }else{
       for(let i = teamCount - 1; i >= 0; i--) order.push(i)
     }
-
   }
 
   return order
-
 }
 
 /* ---------- TIMER ---------- */
 
 function startTimer(){
-
   clearInterval(interval)
 
   timer = 60
 
   interval = setInterval(()=>{
-
     timer--
-
     io.emit("timer", timer)
 
     if(timer <= 0){
@@ -95,15 +56,12 @@ function startTimer(){
     }
 
   }, 1000)
-
 }
 
 /* ---------- AUTO PICK ---------- */
 
 function autoPick(){
-
   let available = players.filter(p => !drafted.includes(p.name))
-
   if(!available.length) return
 
   let pick = available[0]
@@ -116,32 +74,28 @@ function autoPick(){
   io.emit("state", { teams, players, drafted, currentPick, draftOrder })
 
   startTimer()
-
 }
 
-/* ---------- SOCKET CONNECTION ---------- */
+/* ---------- SOCKET ---------- */
 
 io.on("connection", socket => {
 
-  console.log("Client connected ✅")
+  console.log("Client connected")
 
-  // ✅ Always send current state on connect
   socket.emit("state", { teams, players, drafted, currentPick, draftOrder })
 
-  /* ---------- SETUP ---------- */
+  /* ---------- SETUP (FIXED) ---------- */
 
   socket.on("setup", data => {
 
     console.log("SETUP RECEIVED")
 
-    if(!data || !data.teams){
+    if(!data){
       console.log("Invalid setup ❌")
       return
     }
 
-    teams = data.teams
-
-    // ✅ CRITICAL FIX (handles your JSON format)
+    // ✅ PLAYERS
     if(Array.isArray(data.players)){
       players = data.players
     }else if(data.players && Array.isArray(data.players.players)){
@@ -151,6 +105,16 @@ io.on("connection", socket => {
       return
     }
 
+    // ✅ TEAMS (CRITICAL FIX)
+    if(Array.isArray(data.teams)){
+      teams = data.teams
+    }else{
+      console.log("Teams missing ❌")
+      return
+    }
+
+    console.log("Teams loaded:", teams.map(t=>t.name))
+
     drafted = []
     currentPick = 0
 
@@ -159,18 +123,15 @@ io.on("connection", socket => {
     saveDraft()
     startTimer()
 
-    console.log("Draft started ✅")
-
     io.emit("state", { teams, players, drafted, currentPick, draftOrder })
 
   })
 
-  /* ---------- DRAFT PICK ---------- */
+  /* ---------- DRAFT ---------- */
 
   socket.on("draft", name => {
 
     if(!name) return
-
     if(drafted.includes(name)) return
 
     drafted.push(name)
@@ -186,7 +147,6 @@ io.on("connection", socket => {
   /* ---------- UNDO ---------- */
 
   socket.on("undo", () => {
-
     if(!drafted.length) return
 
     drafted.pop()
@@ -195,7 +155,6 @@ io.on("connection", socket => {
     saveDraft()
 
     io.emit("state", { teams, players, drafted, currentPick, draftOrder })
-
   })
 
   /* ---------- PAUSE ---------- */
@@ -208,8 +167,8 @@ io.on("connection", socket => {
 
 /* ---------- START SERVER ---------- */
 
-const PORT = process.env.PORT || 3000
+const PORT = 3000
 
 server.listen(PORT, () => {
-  console.log("Draft server running on port " + PORT + " 🚀")
+  console.log("Server running on port " + PORT)
 })
