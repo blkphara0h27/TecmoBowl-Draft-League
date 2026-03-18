@@ -10642,7 +10642,169 @@
     "kicking_ability": 50.0,
     "avoid_kick_block": 50.0,
     "sim_kicking_ability": 6.0
+  },
+  {
+    "position": "Oline",
+    "team": "Jets",
+    "name": "Jets OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Patriots",
+    "name": "Patriots OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Bills",
+    "name": "Bills OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Dolphins",
+    "name": "Dolphins OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Ravens",
+    "name": "Ravens OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Bengals",
+    "name": "Bengals OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Browns",
+    "name": "Browns OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Steelers",
+    "name": "Steelers OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Texans",
+    "name": "Texans OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Colts",
+    "name": "Colts OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Jaguars",
+    "name": "Jaguars OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Titans",
+    "name": "Titans OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Chiefs",
+    "name": "Chiefs OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Raiders",
+    "name": "Raiders OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Chargers",
+    "name": "Chargers OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Broncos",
+    "name": "Broncos OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Cowboys",
+    "name": "Cowboys OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Giants",
+    "name": "Giants OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Eagles",
+    "name": "Eagles OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Commanders",
+    "name": "Commanders OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Packers",
+    "name": "Packers OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Bears",
+    "name": "Bears OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Lions",
+    "name": "Lions OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Vikings",
+    "name": "Vikings OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Saints",
+    "name": "Saints OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Falcons",
+    "name": "Falcons OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Panthers",
+    "name": "Panthers OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Buccaneers",
+    "name": "Buccaneers OL"
+  },
+  {
+    "position": "Oline",
+    "team": "49ers",
+    "name": "49ers OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Seahawks",
+    "name": "Seahawks OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Rams",
+    "name": "Rams OL"
+  },
+  {
+    "position": "Oline",
+    "team": "Cardinals",
+    "name": "Cardinals OL"
   }
+
+
   ],
   "teams": [
     {
