@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 
@@ -5,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Snake Draft Room</title>
 
-<!-- ✅ Load socket FIRST -->
 <script src="/socket.io/socket.io.js"></script>
 
 <style>
@@ -16,7 +16,6 @@ body{font-family:Arial;background:#f0f0f0;margin:10px;}
 .player{padding:12px;border-bottom:1px solid #ddd;cursor:pointer;}
 .player:hover{background:#eee;}
 
-/* OFFENSE */
 .qb{background:#ffd6d6}
 .rb{background:#d6ffd6}
 .wr{background:#d6e4ff}
@@ -25,7 +24,6 @@ body{font-family:Arial;background:#f0f0f0;margin:10px;}
 .k{background:#fff0f5;}
 .oline{background:#e0e0e0;}
 
-/* DEFENSE */
 .fs,.ss{background:#e6ffe6;}
 .lcb,.rcb{background:#e6f0ff;}
 .lilb,.rilb,.lolb,.rolb{background:#fff5cc;}
@@ -132,10 +130,8 @@ window.loadDraft = function(){
       alert("No saved draft found")
       return
     }
-    let loadedState = JSON.parse(saved)
-    socket.emit("loadState", loadedState)
+    socket.emit("loadState", JSON.parse(saved))
   }catch(e){
-    console.log("Load error:", e)
     localStorage.removeItem("draftState")
   }
 }
@@ -145,8 +141,7 @@ window.loadDraft = function(){
 try{
   let saved = localStorage.getItem("draftState")
   if(saved){
-    let loadedState = JSON.parse(saved)
-    socket.emit("loadState", loadedState)
+    socket.emit("loadState", JSON.parse(saved))
   }
 }catch(e){
   localStorage.removeItem("draftState")
@@ -154,8 +149,6 @@ try{
 
 socket.on("state", s=>{
   state = s
-
-  
   render()
 })
 
@@ -163,9 +156,14 @@ socket.on("timer", t=>{
   document.getElementById("timer").innerText = t
 })
 
+/* START */
+
 window.start = function(){
 fetch("/players.json")
-.then(r=>r.json())
+.then(r=>{
+  if(!r.ok) throw new Error("players.json failed")
+  return r.json()
+})
 .then(data=>{
 
   let input = prompt("Enter draft users")
@@ -176,9 +174,13 @@ fetch("/players.json")
   socket.emit("setup",{
     teams: draftUsers,
     players: data.players,
-    nflTeams: data.teams
+    nflTeams: data.teams || []
   })
 
+})
+.catch(err=>{
+  console.error(err)
+  alert("Error loading players.json")
 })
 }
 
@@ -198,53 +200,50 @@ window.setFilter = function(p){
   render()
 }
 
+/* ---------- FIXED SEARCH + RENDER ---------- */
+
 function render(){
 
 let list=document.getElementById("players")
 list.innerHTML=""
 
-let search=document.getElementById("search").value.toLowerCase()
+let query=document.getElementById("search").value.toLowerCase().trim()
 
+/* TEAMS VIEW */
 if(positionFilter==="TEAMS"){
-
 (state.nflTeams||[]).forEach(t=>{
 
-if(!t.name.toLowerCase().includes(search)) return
-
-let rush = t.ol?.rushingPower ?? "-"
-let hit = t.ol?.hittingPower ?? "-"
+if(!t.name.toLowerCase().includes(query)) return
 
 let d=document.createElement("div")
 d.className="player"
 d.style.background="#fff3b0"
-
-d.innerHTML=`
-<strong>${t.name}</strong><br>
-OL Rush: ${rush}<br>
-OL Hit: ${hit}
-`
+d.innerText=t.name
 
 d.onclick=()=>socket.emit("draft", t.name)
-
 list.appendChild(d)
-
 })
-
 return
 }
 
+/* PLAYER VIEW */
 (state.players||[]).forEach(p=>{
 
-if(positionFilter !== "ALL"){
+/* FILTER */
+if(positionFilter!=="ALL"){
   if(Array.isArray(positionFilter)){
     if(!positionFilter.includes(p.position)) return
   } else {
-    if(p.position !== positionFilter) return
+    if(p.position!==positionFilter) return
   }
 }
 
+/* SEARCH FIX */
+let name=p.name.toLowerCase()
+
+if(query && !name.includes(query) && !name.split(" ").some(n=>n.includes(query))) return
+
 if(state.drafted?.includes(p.name)) return
-if(!p.name.toLowerCase().includes(search)) return
 
 let d=document.createElement("div")
 d.className="player "+p.position.toLowerCase()
@@ -257,7 +256,6 @@ list.appendChild(d)
 })
 
 /* BOARD */
-
 let board=document.getElementById("board")
 board.innerHTML=""
 
@@ -317,7 +315,6 @@ board.appendChild(row)
 }
 
 /* HISTORY */
-
 let history=document.getElementById("history")
 history.innerHTML=""
 
@@ -335,3 +332,4 @@ history.appendChild(row)
 
 </body>
 </html>
+
