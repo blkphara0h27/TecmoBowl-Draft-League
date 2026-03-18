@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html>
 
@@ -19,6 +20,14 @@ body{font-family:Arial;background:#f0f0f0;margin:10px;}
 .rb{background:#d6ffd6}
 .wr{background:#d6e4ff}
 .te{background:#f0d6ff}
+.p{background:#ffe4b5;}
+.k{background:#fff0f5;}
+.oline{background:#e0e0e0;}
+
+.fs,.ss{background:#e6ffe6;}
+.lcb,.rcb{background:#e6f0ff;}
+.lilb,.rilb,.lolb,.rolb{background:#fff5cc;}
+.le,.re,.rnt{background:#ffe6e6;}
 
 #board{background:white;padding:10px;border-radius:6px;overflow-x:auto;}
 .round{display:flex;}
@@ -46,6 +55,8 @@ button{padding:8px;margin:2px;}
 <button onclick="undo()">Undo</button>
 <button onclick="resetDraft()">Reset Draft</button>
 <button onclick="exportCSV()">Export CSV</button>
+<button onclick="saveDraft()">Save Draft</button>
+<button onclick="loadDraft()">Load Draft</button>
 
 <br><br>
 
@@ -61,6 +72,20 @@ Draft Timer: <span id="timer">60</span>
 <button onclick="setFilter('RB')">RB</button>
 <button onclick="setFilter('WR')">WR</button>
 <button onclick="setFilter('TE')">TE</button>
+<button onclick="setFilter(['P','K'])">P/K</button>
+
+<br>
+
+<button onclick="setFilter(['FS','SS','LCB','RCB'])">S</button>
+<button onclick="setFilter(['LILB','LOLB','RILB','ROLB'])">LB</button>
+<button onclick="setFilter(['LE','RNT','RE'])">DEF</button>
+
+<br>
+
+<button onclick="setFilter(['Oline'])">OLine</button>
+
+<br>
+
 <button onclick="setFilter('TEAMS')">Teams</button>
 
 <br><br>
@@ -82,11 +107,40 @@ Draft Timer: <span id="timer">60</span>
 </div>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
 
 const socket = io()
 
 let state = {}
 let positionFilter = "ALL"
+
+/* SAVE */
+window.saveDraft = function(){
+  localStorage.setItem("draftState", JSON.stringify(state))
+  alert("Draft saved!")
+}
+
+/* LOAD */
+window.loadDraft = function(){
+  try{
+    let saved = localStorage.getItem("draftState")
+    if(!saved) return alert("No saved draft found")
+
+    socket.emit("loadState", JSON.parse(saved))
+  }catch(e){
+    localStorage.removeItem("draftState")
+  }
+}
+
+/* AUTO LOAD */
+try{
+  let saved = localStorage.getItem("draftState")
+  if(saved){
+    socket.emit("loadState", JSON.parse(saved))
+  }
+}catch(e){
+  localStorage.removeItem("draftState")
+}
 
 socket.on("state", s=>{
   state = s
@@ -97,34 +151,26 @@ socket.on("timer", t=>{
   document.getElementById("timer").innerText = t
 })
 
-function start(){
+window.start = function(){
 fetch("/players.json")
 .then(r=>r.json())
 .then(data=>{
 
-  let players = data.players
-  let nflTeams = data.teams
-
   let input = prompt("Enter draft users")
   if(!input) return
 
-  let draftUsers = input.split(",").map(t=>t.trim()).filter(t=>t)
-
   socket.emit("setup",{
-    teams: draftUsers,
-    players: players,
-    nflTeams: nflTeams
+    teams: input.split(",").map(t=>t.trim()),
+    players: data.players,
+    nflTeams: data.teams
   })
-
 })
 }
 
-/* ACTIONS */
+window.pause = ()=>socket.emit("pause")
+window.undo = ()=>socket.emit("undo")
 
-function pause(){ socket.emit("pause") }
-function undo(){ socket.emit("undo") }
-
-function resetDraft(){
+window.resetDraft = function(){
   socket.emit("setup",{
     teams: state.teams,
     players: state.players,
@@ -132,14 +178,10 @@ function resetDraft(){
   })
 }
 
-/* FILTER */
-
-function setFilter(p){
-  positionFilter=p
+window.setFilter = function(p){
+  positionFilter = p
   render()
 }
-
-/* RENDER */
 
 function render(){
 
@@ -148,172 +190,9 @@ list.innerHTML=""
 
 let search=document.getElementById("search").value.toLowerCase()
 
-/* TEAMS */
-
 if(positionFilter==="TEAMS"){
-
 (state.nflTeams||[]).forEach(t=>{
-
 if(!t.name.toLowerCase().includes(search)) return
 
-let d=document.createElement("div")
-d.className="player"
-d.style.background="#fff3b0"
-
-d.innerHTML=`
-<strong>${t.name}</strong><br>
-OL Rush: ${t.ol.rushingPower}<br>
-OL Hit: ${t.ol.hittingPower}
-`
-
-d.onclick=()=>socket.emit("draft", t.name)
-
-list.appendChild(d)
-
-})
-
-return
-}
-
-/* PLAYERS */
-
-(state.players||[]).forEach(p=>{
-
-if(positionFilter!=="ALL" && p.position!==positionFilter) return
-if(state.drafted?.includes(p.name)) return
-if(!p.name.toLowerCase().includes(search)) return
-
-let d=document.createElement("div")
-d.className="player "+p.position.toLowerCase()
-d.innerText=p.name+" ("+p.position+")"
-
-d.onclick=()=>socket.emit("draft", p.name)
-
-list.appendChild(d)
-
-})
-
-/* BOARD */
-
-let board=document.getElementById("board")
-board.innerHTML=""
-
-let teams=state.teams||[]
-let picks=state.drafted||[]
-let order=state.draftOrder||[]
-
-let cols=teams.length
-
-let header=document.createElement("div")
-header.className="round"
-
-let h=document.createElement("div")
-h.className="cell header"
-h.innerText="Round"
-header.appendChild(h)
-
-teams.forEach(t=>{
-let c=document.createElement("div")
-c.className="cell header"
-c.innerText=t
-header.appendChild(c)
-})
-
-board.appendChild(header)
-
-let totalRounds=Math.ceil(picks.length/cols)
-
-for(let r=0;r<totalRounds;r++){
-
-let row=document.createElement("div")
-row.className="round"
-
-let rc=document.createElement("div")
-rc.className="cell header"
-rc.innerText=r+1
-row.appendChild(rc)
-
-let cells=[]
-
-for(let c=0;c<cols;c++){
-let cell=document.createElement("div")
-cell.className="cell"
-cells.push(cell)
-row.appendChild(cell)
-}
-
-for(let i=0;i<cols;i++){
-
-let idx=r*cols+i
-if(!picks[idx]) continue
-
-let teamIndex=order[idx]
-cells[teamIndex].innerText=picks[idx]
-}
-
-board.appendChild(row)
-}
-
-/* HISTORY */
-
-let history=document.getElementById("history")
-history.innerHTML=""
-
-picks.forEach((p,i)=>{
-let team=teams[order[i]]
-let row=document.createElement("div")
-row.innerText=(i+1)+". "+team+" → "+p
-history.appendChild(row)
-})
-
-}
-
-/* EXPORT CSV */
-
-function exportCSV(){
-
-let teams=state.teams||[]
-let picks=state.drafted||[]
-let order=state.draftOrder||[]
-
-let cols=teams.length
-let rows=[]
-
-rows.push(["Round",...teams])
-
-let totalRounds=Math.ceil(picks.length/cols)
-
-for(let r=0;r<totalRounds;r++){
-
-let row=[r+1]
-
-for(let c=0;c<cols;c++) row.push("")
-
-for(let i=0;i<cols;i++){
-let idx=r*cols+i
-if(!picks[idx]) continue
-
-let teamIndex=order[idx]
-row[teamIndex+1]=picks[idx]
-}
-
-rows.push(row)
-}
-
-let csv=rows.map(r=>r.join(",")).join("\n")
-
-let blob=new Blob([csv],{type:"text/csv"})
-let url=URL.createObjectURL(blob)
-
-let a=document.createElement("a")
-a.href=url
-a.download="draft.csv"
-a.click()
-
-URL.revokeObjectURL(url)
-}
-
-</script>
-
-</body>
-</html>
+let
+```
