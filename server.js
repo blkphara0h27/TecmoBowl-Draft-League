@@ -1,4 +1,4 @@
-```js
+
 const express = require("express")
 const http = require("http")
 const { Server } = require("socket.io")
@@ -140,4 +140,3 @@ io.on("connection", socket => {
 
       teams = data.teams || []
       nf
-```
