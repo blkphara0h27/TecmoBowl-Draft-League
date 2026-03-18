@@ -90,7 +90,9 @@ Draft Timer: <span id="timer">60</span>
 
 <br><br>
 
-<input id="search" onkeyup="render()" placeholder="Search...">
+<!-- ✅ FIXED SEARCH INPUT -->
+<input id="search" placeholder="Search...">
+
 <div id="players"></div>
 </div>
 
@@ -114,15 +116,18 @@ const socket = io()
 let state = {}
 let positionFilter = "ALL"
 
-/* SAVE */
+/* ✅ LIVE SEARCH FIX */
+document.getElementById("search").addEventListener("input", () => {
+  render()
+})
 
+/* SAVE */
 window.saveDraft = function(){
   localStorage.setItem("draftState", JSON.stringify(state))
   alert("Draft saved!")
 }
 
 /* LOAD */
-
 window.loadDraft = function(){
   try{
     let saved = localStorage.getItem("draftState")
@@ -137,7 +142,6 @@ window.loadDraft = function(){
 }
 
 /* AUTO LOAD */
-
 try{
   let saved = localStorage.getItem("draftState")
   if(saved){
@@ -157,7 +161,6 @@ socket.on("timer", t=>{
 })
 
 /* START */
-
 window.start = function(){
 fetch("/players.json")
 .then(r=>{
@@ -200,7 +203,7 @@ window.setFilter = function(p){
   render()
 }
 
-/* ---------- FIXED SEARCH + RENDER ---------- */
+/* ---------- RENDER ---------- */
 
 function render(){
 
@@ -209,10 +212,9 @@ list.innerHTML=""
 
 let query=document.getElementById("search").value.toLowerCase().trim()
 
-/* TEAMS VIEW */
+/* TEAMS */
 if(positionFilter==="TEAMS"){
 (state.nflTeams||[]).forEach(t=>{
-
 if(!t.name.toLowerCase().includes(query)) return
 
 let d=document.createElement("div")
@@ -226,10 +228,9 @@ list.appendChild(d)
 return
 }
 
-/* PLAYER VIEW */
+/* PLAYERS */
 (state.players||[]).forEach(p=>{
 
-/* FILTER */
 if(positionFilter!=="ALL"){
   if(Array.isArray(positionFilter)){
     if(!positionFilter.includes(p.position)) return
@@ -238,7 +239,6 @@ if(positionFilter!=="ALL"){
   }
 }
 
-/* SEARCH FIX */
 let name=p.name.toLowerCase()
 
 if(query && !name.includes(query) && !name.split(" ").some(n=>n.includes(query))) return
