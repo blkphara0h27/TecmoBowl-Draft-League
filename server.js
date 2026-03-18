@@ -1,337 +1,138 @@
-<!DOCTYPE html>
-<html>
+```js
+const express = require("express")
+const http = require("http")
+const { Server } = require("socket.io")
 
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Snake Draft Room</title>
+const app = express()
+const server = http.createServer(app)
+const io = new Server(server)
 
-<!-- ✅ Load socket FIRST -->
-<script src="/socket.io/socket.io.js"></script>
+// Serve static files from /public
+app.use(express.static("public"))
 
-<style>
-body{font-family:Arial;background:#f0f0f0;margin:10px;}
-#layout{display:grid;grid-template-columns:1fr 2fr 1fr;gap:20px;}
+/* ---------- STATE ---------- */
 
-#players{background:white;padding:10px;max-height:500px;overflow:auto;border-radius:6px;}
-.player{padding:12px;border-bottom:1px solid #ddd;cursor:pointer;}
-.player:hover{background:#eee;}
+let teams = []
+let nflTeams = []
+let players = []
+let drafted = []
 
-/* OFFENSE */
-.qb{background:#ffd6d6}
-.rb{background:#d6ffd6}
-.wr{background:#d6e4ff}
-.te{background:#f0d6ff}
-.p{background:#ffe4b5;}
-.k{background:#fff0f5;}
-.oline{background:#e0e0e0;}
+let currentPick = 0
+let draftOrder = []
 
-/* DEFENSE */
-.fs,.ss{background:#e6ffe6;}
-.lcb,.rcb{background:#e6f0ff;}
-.lilb,.rilb,.lolb,.rolb{background:#fff5cc;}
-.le,.re,.rnt{background:#ffe6e6;}
+let timer = 60
+let interval = null
 
-#board{background:white;padding:10px;border-radius:6px;overflow-x:auto;}
-.round{display:flex;}
+/* ---------- SNAKE ORDER ---------- */
 
-.cell{
-width:120px;border:1px solid #ccc;padding:6px;height:45px;
-display:flex;align-items:center;justify-content:center;
-}
+function snakeOrder(teamCount, rounds) {
+  let order = []
 
-.header{background:#ddd;font-weight:bold;}
-
-#history{background:white;padding:10px;max-height:250px;overflow:auto;border-radius:6px;}
-#timer{color:red;font-weight:bold;}
-
-button{padding:8px;margin:2px;}
-</style>
-</head>
-
-<body>
-
-<h2>Snake Draft Room</h2>
-
-<button onclick="start()">Start Draft</button>
-<button onclick="pause()">Pause</button>
-<button onclick="undo()">Undo</button>
-<button onclick="resetDraft()">Reset Draft</button>
-<button onclick="exportCSV()">Export CSV</button>
-<button onclick="saveDraft()">Save Draft</button>
-<button onclick="loadDraft()">Load Draft</button>
-
-<br><br>
-
-Draft Timer: <span id="timer">60</span>
-
-<div id="layout">
-
-<div>
-<h3>Players</h3>
-
-<button onclick="setFilter('ALL')">All</button>
-<button onclick="setFilter('QB')">QB</button>
-<button onclick="setFilter('RB')">RB</button>
-<button onclick="setFilter('WR')">WR</button>
-<button onclick="setFilter('TE')">TE</button>
-<button onclick="setFilter(['P','K'])">P/K</button>
-
-<br>
-
-<button onclick="setFilter(['FS','SS','LCB','RCB'])">S</button>
-<button onclick="setFilter(['LILB','LOLB','RILB','ROLB'])">LB</button>
-<button onclick="setFilter(['LE','RNT','RE'])">DEF</button>
-
-<br>
-
-<button onclick="setFilter(['Oline'])">OLine</button>
-
-<br>
-
-<button onclick="setFilter('TEAMS')">Teams</button>
-
-<br><br>
-
-<input id="search" onkeyup="render()" placeholder="Search...">
-<div id="players"></div>
-</div>
-
-<div>
-<h3>Draft Board</h3>
-<div id="board"></div>
-</div>
-
-<div>
-<h3>History</h3>
-<div id="history"></div>
-</div>
-
-</div>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
-const socket = io()
-
-let state = {}
-let positionFilter = "ALL"
-
-/* SAVE */
-
-window.saveDraft = function(){
-  localStorage.setItem("draftState", JSON.stringify(state))
-  alert("Draft saved!")
-}
-
-/* LOAD */
-
-window.loadDraft = function(){
-  try{
-    let saved = localStorage.getItem("draftState")
-    if(!saved){
-      alert("No saved draft found")
-      return
+  for (let r = 0; r < rounds; r++) {
+    if (r % 2 === 0) {
+      for (let i = 0; i < teamCount; i++) order.push(i)
+    } else {
+      for (let i = teamCount - 1; i >= 0; i--) order.push(i)
     }
-    let loadedState = JSON.parse(saved)
-    socket.emit("loadState", loadedState)
-  }catch(e){
-    console.log("Load error:", e)
-    localStorage.removeItem("draftState")
   }
+
+  return order
 }
 
-/* AUTO LOAD */
+/* ---------- TIMER ---------- */
 
-try{
-  let saved = localStorage.getItem("draftState")
-  if(saved){
-    let loadedState = JSON.parse(saved)
-    socket.emit("loadState", loadedState)
+function startTimer() {
+  if (interval) clearInterval(interval)
+
+  timer = 60
+
+  interval = setInterval(() => {
+    timer--
+    io.emit("timer", timer)
+
+    if (timer <= 0) {
+      autoPick()
+    }
+  }, 1000)
+}
+
+/* ---------- AUTO PICK ---------- */
+
+function autoPick() {
+  let available = players.filter(p => !drafted.includes(p.name))
+
+  if (!available.length) {
+    console.log("No players left for auto pick")
+    return
   }
-}catch(e){
-  localStorage.removeItem("draftState")
+
+  let pick = available[0]
+
+  console.log("Auto picking:", pick.name)
+
+  drafted.push(pick.name)
+  currentPick++
+
+  emitState()
+  startTimer()
 }
 
-socket.on("state", s=>{
-  state = s
+/* ---------- EMIT STATE ---------- */
 
-  
-  render()
-})
-
-socket.on("timer", t=>{
-  document.getElementById("timer").innerText = t
-})
-
-window.start = function(){
-fetch("/players.json")
-.then(r=>r.json())
-.then(data=>{
-
-  let input = prompt("Enter draft users")
-  if(!input) return
-
-  let draftUsers = input.split(",").map(t=>t.trim()).filter(t=>t)
-
-  socket.emit("setup",{
-    teams: draftUsers,
-    players: data.players,
-    nflTeams: data.teams
-  })
-
-})
-}
-
-window.pause = ()=>socket.emit("pause")
-window.undo = ()=>socket.emit("undo")
-
-window.resetDraft = function(){
-  socket.emit("setup",{
-    teams: state.teams,
-    players: state.players,
-    nflTeams: state.nflTeams
+function emitState() {
+  io.emit("state", {
+    teams,
+    nflTeams,
+    players,
+    drafted,
+    currentPick,
+    draftOrder
   })
 }
 
-window.setFilter = function(p){
-  positionFilter = p
-  render()
-}
+/* ---------- SOCKET ---------- */
 
-function render(){
+io.on("connection", socket => {
+  console.log("✅ Client connected")
 
-let list=document.getElementById("players")
-list.innerHTML=""
+  emitState()
 
-let search=document.getElementById("search").value.toLowerCase()
+  socket.on("setup", data => {
+    if (!data) return
 
-if(positionFilter==="TEAMS"){
+    teams = data.teams || []
+    nflTeams = data.nflTeams || []
+    players = data.players || []
 
-(state.nflTeams||[]).forEach(t=>{
+    drafted = []
+    currentPick = 0
 
-if(!t.name.toLowerCase().includes(search)) return
+    draftOrder = snakeOrder(teams.length, 20)
 
-let rush = t.ol?.rushingPower ?? "-"
-let hit = t.ol?.hittingPower ?? "-"
+    console.log("Teams:", teams)
+    console.log("Players loaded:", players.length)
 
-let d=document.createElement("div")
-d.className="player"
-d.style.background="#fff3b0"
+    startTimer()
+    emitState()
+  })
 
-d.innerHTML=`
-<strong>${t.name}</strong><br>
-OL Rush: ${rush}<br>
-OL Hit: ${hit}
-`
+  socket.on("loadState", data => {
+    if (!data) return
 
-d.onclick=()=>socket.emit("draft", t.name)
+    try {
+      teams = data.teams || []
+      nflTeams = data.nflTeams || []
+      players = data.players || []
+      drafted = data.drafted || []
+      currentPick = data.currentPick || 0
+      draftOrder = data.draftOrder || []
 
-list.appendChild(d)
+      startTimer()
+      emitState()
+    } catch (err) {
+      console.log("Error loading state:", err)
+    }
+  })
 
-})
-
-return
-}
-
-(state.players||[]).forEach(p=>{
-
-if(positionFilter !== "ALL"){
-  if(Array.isArray(positionFilter)){
-    if(!positionFilter.includes(p.position)) return
-  } else {
-    if(p.position !== positionFilter) return
-  }
-}
-
-if(state.drafted?.includes(p.name)) return
-if(!p.name.toLowerCase().includes(search)) return
-
-let d=document.createElement("div")
-d.className="player "+p.position.toLowerCase()
-d.innerText=p.name+" ("+p.position+")"
-
-d.onclick=()=>socket.emit("draft", p.name)
-
-list.appendChild(d)
-
-})
-
-/* BOARD */
-
-let board=document.getElementById("board")
-board.innerHTML=""
-
-let teams=state.teams||[]
-let picks=state.drafted||[]
-let order=state.draftOrder||[]
-
-let cols=teams.length
-
-let header=document.createElement("div")
-header.className="round"
-
-let h=document.createElement("div")
-h.className="cell header"
-h.innerText="Round"
-header.appendChild(h)
-
-teams.forEach(t=>{
-let c=document.createElement("div")
-c.className="cell header"
-c.innerText=t
-header.appendChild(c)
-})
-
-board.appendChild(header)
-
-let totalRounds=Math.ceil(picks.length/cols)
-
-for(let r=0;r<totalRounds;r++){
-
-let row=document.createElement("div")
-row.className="round"
-
-let rc=document.createElement("div")
-rc.className="cell header"
-rc.innerText=r+1
-row.appendChild(rc)
-
-let cells=[]
-
-for(let c=0;c<cols;c++){
-let cell=document.createElement("div")
-cell.className="cell"
-cells.push(cell)
-row.appendChild(cell)
-}
-
-for(let i=0;i<cols;i++){
-let idx=r*cols+i
-if(!picks[idx]) continue
-
-let teamIndex=order[idx]
-cells[teamIndex].innerText=picks[idx]
-}
-
-board.appendChild(row)
-}
-
-/* HISTORY */
-
-let history=document.getElementById("history")
-history.innerHTML=""
-
-picks.forEach((p,i)=>{
-let team=teams[order[i]]
-let row=document.createElement("div")
-row.innerText=(i+1)+". "+team+" → "+p
-history.appendChild(row)
-})
-
-}
-
-})
-</script>
-
-</body>
-</html>
+  socket.on("draft", name =>
+```
