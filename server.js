@@ -134,5 +134,38 @@ io.on("connection", socket => {
     }
   })
 
-  socket.on("draft", name =>
+  socket.on("draft", name => {
+    if (!name) return
+    if (drafted.includes(name)) return
+
+    drafted.push(name)
+    currentPick++
+
+    startTimer()
+    emitState()
+  })
+
+  socket.on("undo", () => {
+    if (!drafted.length) return
+
+    drafted.pop()
+    currentPick--
+
+    emitState()
+  })
+
+  socket.on("pause", () => {
+    clearInterval(interval)
+    interval = null
+  })
+})
+
+/* ---------- START SERVER ---------- */
+
+// ✅ REQUIRED FOR RENDER
+const PORT = process.env.PORT || 3000
+
+server.listen(PORT, () => {
+  console.log("🚀 Server running on port " + PORT)
+})
 ```
