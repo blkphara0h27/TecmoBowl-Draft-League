@@ -1,14 +1,14 @@
+
 const express = require("express")
 const http = require("http")
 const { Server } = require("socket.io")
+const path = require("path")
 
 const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
 
-// Serve static files
-const path = require("path")
-
+// ✅ Serve static files correctly (important for Render)
 app.use(express.static(path.join(__dirname, "public")))
 
 /* ---------- STATE ---------- */
@@ -26,14 +26,14 @@ let interval = null
 
 /* ---------- SNAKE ORDER ---------- */
 
-function snakeOrder(teamCount, rounds) {
+function snakeOrder(teamCount, rounds){
   let order = []
 
-  for (let r = 0; r < rounds; r++) {
-    if (r % 2 === 0) {
-      for (let i = 0; i < teamCount; i++) order.push(i)
+  for(let r = 0; r < rounds; r++){
+    if(r % 2 === 0){
+      for(let i = 0; i < teamCount; i++) order.push(i)
     } else {
-      for (let i = teamCount - 1; i >= 0; i--) order.push(i)
+      for(let i = teamCount - 1; i >= 0; i--) order.push(i)
     }
   }
 
@@ -42,27 +42,30 @@ function snakeOrder(teamCount, rounds) {
 
 /* ---------- TIMER ---------- */
 
-function startTimer() {
-  if (interval) clearInterval(interval)
+function startTimer(){
+
+  if(interval) clearInterval(interval)
 
   timer = 60
 
-  interval = setInterval(() => {
+  interval = setInterval(()=>{
     timer--
     io.emit("timer", timer)
 
-    if (timer <= 0) {
+    if(timer <= 0){
       autoPick()
     }
+
   }, 1000)
 }
 
 /* ---------- AUTO PICK ---------- */
 
-function autoPick() {
+function autoPick(){
+
   let available = players.filter(p => !drafted.includes(p.name))
 
-  if (!available.length) {
+  if(!available.length){
     console.log("⚠️ No players left for auto pick")
     return
   }
@@ -80,7 +83,7 @@ function autoPick() {
 
 /* ---------- EMIT STATE ---------- */
 
-function emitState() {
+function emitState(){
   io.emit("state", {
     teams,
     nflTeams,
@@ -99,13 +102,11 @@ io.on("connection", socket => {
 
   emitState()
 
-  /* ---------- SETUP ---------- */
-
   socket.on("setup", data => {
 
     console.log("🔥 Setup received")
 
-    if (!data) return
+    if(!data) return
 
     teams = data.teams || []
     nflTeams = data.nflTeams || []
@@ -116,23 +117,15 @@ io.on("connection", socket => {
 
     draftOrder = snakeOrder(teams.length, 20)
 
-    console.log("Teams:", teams)
-    console.log("Players loaded:", players.length)
-
     startTimer()
     emitState()
   })
-
-  /* ---------- LOAD STATE ---------- */
 
   socket.on("loadState", data => {
 
     console.log("📂 LOAD STATE RECEIVED")
 
-    if (!data) {
-      console.log("⚠️ No data received")
-      return
-    }
+    if(!data) return
 
     try {
       teams = data.teams || []
@@ -142,9 +135,6 @@ io.on("connection", socket => {
       currentPick = data.currentPick || 0
       draftOrder = data.draftOrder || []
 
-      console.log("✅ Loaded Draft")
-      console.log("Drafted picks:", drafted.length)
-
       startTimer()
       emitState()
 
@@ -153,18 +143,10 @@ io.on("connection", socket => {
     }
   })
 
-  /* ---------- DRAFT ---------- */
-
   socket.on("draft", name => {
 
-    if (!name) return
-
-    if (drafted.includes(name)) {
-      console.log("⚠️ Duplicate pick prevented:", name)
-      return
-    }
-
-    console.log("🏈 Pick made:", name)
+    if(!name) return
+    if(drafted.includes(name)) return
 
     drafted.push(name)
     currentPick++
@@ -173,25 +155,17 @@ io.on("connection", socket => {
     emitState()
   })
 
-  /* ---------- UNDO ---------- */
-
   socket.on("undo", () => {
 
-    if (!drafted.length) return
+    if(!drafted.length) return
 
-    let removed = drafted.pop()
+    drafted.pop()
     currentPick--
-
-    console.log("↩️ Undo pick:", removed)
 
     emitState()
   })
 
-  /* ---------- PAUSE ---------- */
-
   socket.on("pause", () => {
-
-    console.log("⏸ Draft paused")
 
     clearInterval(interval)
     interval = null
@@ -201,7 +175,7 @@ io.on("connection", socket => {
 
 /* ---------- START SERVER ---------- */
 
-// ✅ REQUIRED FOR RENDER
+// ✅ CRITICAL FOR RENDER
 const PORT = process.env.PORT || 3000
 
 server.listen(PORT, () => {
