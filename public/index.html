@@ -66,8 +66,6 @@ const socket = io()
 
 let state = {}
 
-/* ---------- SOCKET ---------- */
-
 socket.on("state", s=>{
   state = s
   render()
@@ -77,7 +75,7 @@ socket.on("timer", t=>{
   document.getElementById("timer").innerText = t
 })
 
-/* ---------- START DRAFT (FIXED) ---------- */
+/* ---------- FIXED START ---------- */
 
 window.start = function(){
 
@@ -88,12 +86,7 @@ window.start = function(){
   })
   .then(data => {
 
-    console.log("✅ JSON LOADED:", data)
-
-    if(!data.players){
-      alert("players.json missing players array")
-      return
-    }
+    console.log("✅ JSON LOADED")
 
     let input = prompt("Enter draft users (comma separated)")
     if(!input) return
@@ -108,17 +101,13 @@ window.start = function(){
 
   })
   .catch(err => {
-    console.error("❌ FETCH FAILED:", err)
-    alert("ERROR: players.json not loading")
+    console.error(err)
+    alert("Failed to load players.json")
   })
 }
 
-/* ---------- CONTROLS ---------- */
-
 window.pause = ()=>socket.emit("pause")
 window.undo = ()=>socket.emit("undo")
-
-/* ---------- RENDER ---------- */
 
 function render(){
 
