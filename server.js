@@ -1,7 +1,6 @@
 const express = require("express")
 const http = require("http")
 const { Server } = require("socket.io")
-const fs = require("fs")   // ✅ NEW
 
 const app = express()
 const server = http.createServer(app)
@@ -21,40 +20,6 @@ let draftOrder = []
 
 let timer = 60
 let interval = null
-
-/* ---------- SAVE / LOAD ---------- */
-
-function saveToFile(){
-  fs.writeFileSync("draft.json", JSON.stringify({
-    teams,
-    nflTeams,
-    players,
-    drafted,
-    currentPick,
-    draftOrder
-  }))
-}
-
-function loadFromFile(){
-  try{
-    let data = JSON.parse(fs.readFileSync("draft.json"))
-
-    teams = data.teams || []
-    nflTeams = data.nflTeams || []
-    players = data.players || []
-    drafted = data.drafted || []
-    currentPick = data.currentPick || 0
-    draftOrder = data.draftOrder || []
-
-    console.log("✅ Draft loaded from file")
-
-  }catch(e){
-    console.log("ℹ️ No saved draft found")
-  }
-}
-
-/* LOAD ON START */
-loadFromFile()
 
 /* ---------- POSITION LIMITS ---------- */
 
@@ -151,13 +116,11 @@ function autoPick(){
   drafted.push("SKIPPED")
   currentPick++
 
-  saveToFile()   // ✅ SAVE
-
   emitState()
   startTimer()
 }
 
-/* ---------- EMIT STATE ---------- */
+/* ---------- EMIT STATE (UPDATED) ---------- */
 
 function emitState(){
 
@@ -170,7 +133,7 @@ function emitState(){
     drafted,
     currentPick,
     draftOrder,
-    rosters
+    rosters   // 👈 NEW
   })
 }
 
@@ -197,8 +160,6 @@ io.on("connection", socket => {
 
     draftOrder = snakeOrder(teams.length, 20)
 
-    saveToFile()   // ✅ SAVE
-
     startTimer()
     emitState()
   })
@@ -217,8 +178,6 @@ io.on("connection", socket => {
       currentPick = data.currentPick || 0
       draftOrder = data.draftOrder || []
 
-      saveToFile()   // ✅ SAVE
-
       startTimer()
       emitState()
 
@@ -232,7 +191,11 @@ io.on("connection", socket => {
   socket.on("draft", name => {
 
     if(!name) return
-    if(drafted.includes(name)) return
+
+    if(drafted.includes(name)){
+      console.log("⚠️ Duplicate pick prevented:", name)
+      return
+    }
 
     let teamIndex = draftOrder[currentPick]
 
@@ -250,8 +213,6 @@ io.on("connection", socket => {
     drafted.push(name)
     currentPick++
 
-    saveToFile()   // ✅ SAVE
-
     startTimer()
     emitState()
   })
@@ -261,12 +222,11 @@ io.on("connection", socket => {
   socket.on("replacePick", ({ index, name }) => {
 
     if(!name) return
+
     if(drafted[index] !== "SKIPPED") return
     if(drafted.includes(name)) return
 
     drafted[index] = name
-
-    saveToFile()   // ✅ SAVE
 
     emitState()
   })
@@ -280,11 +240,10 @@ io.on("connection", socket => {
 
     const playerExists = players.some(p => p.name === name)
     if(!playerExists) return
+
     if(drafted.includes(name)) return
 
     drafted[index] = name
-
-    saveToFile()   // ✅ SAVE
 
     emitState()
   })
@@ -297,8 +256,6 @@ io.on("connection", socket => {
 
     drafted.pop()
     currentPick--
-
-    saveToFile()   // ✅ SAVE
 
     emitState()
   })
