@@ -3,7 +3,7 @@
 
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Snake Draft Room</title>
+<title>TecmoBowl Draft Room</title>
 
 <script src="/socket.io/socket.io.js"></script>
 
@@ -11,6 +11,43 @@
 body{font-family:Arial;background:#f0f0f0;margin:10px;}
 #layout{display:grid;grid-template-columns:1fr 2fr 1fr;gap:20px;}
 
+@media (max-width: 900px){
+
+  #layout{
+    grid-template-columns:1fr;
+  }
+
+  #players,
+  #board,
+  #history,
+  #rosters{
+    max-height:none;
+  }
+
+  .cell{
+    width:90px;
+    font-size:12px;
+    padding:4px;
+  }
+
+  button{
+    padding:10px;
+    font-size:14px;
+  }
+
+  .player{
+    padding:14px;
+    font-size:15px;
+  }
+
+  input{
+    padding:10px;
+    width:100%;
+    font-size:16px;
+    margin-bottom:10px;
+  }
+}
+  
 #players{background:white;padding:10px;max-height:500px;overflow:auto;border-radius:6px;}
 .player{padding:12px;border-bottom:1px solid #ddd;cursor:pointer;}
 .player:hover{background:#eee;}
