@@ -12,42 +12,22 @@ body{font-family:Arial;background:#f0f0f0;margin:10px;}
 #layout{display:grid;grid-template-columns:1fr 2fr 1fr;gap:20px;}
 
 @media (max-width: 900px){
+  #layout{grid-template-columns:1fr;}
 
-  #layout{
-    grid-template-columns:1fr;
-  }
+  #players,#board,#history,#rosters{max-height:none;}
 
-  #players,
-  #board,
-  #history,
-  #rosters{
-    max-height:none;
-  }
+  .cell{width:90px;font-size:12px;padding:4px;}
 
-  .cell{
-    width:90px;
-    font-size:12px;
-    padding:4px;
-  }
+  button{padding:10px;font-size:14px;}
 
-  button{
-    padding:10px;
-    font-size:14px;
-  }
+  .player{padding:14px;font-size:15px;}
 
-  .player{
-    padding:14px;
-    font-size:15px;
-  }
-
-  input{
-    padding:10px;
-    width:100%;
-    font-size:16px;
-    margin-bottom:10px;
-  }
+  input{padding:10px;width:100%;font-size:16px;margin-bottom:10px;}
 }
-  
+
+/* ✅ added */
+h3{cursor:pointer;}
+
 #players{background:white;padding:10px;max-height:500px;overflow:auto;border-radius:6px;}
 .player{padding:12px;border-bottom:1px solid #ddd;cursor:pointer;}
 .player:hover{background:#eee;}
@@ -103,15 +83,17 @@ button{padding:8px;margin:2px;}
 <button onclick="saveDraft()">Save Draft</button>
 <button onclick="loadDraft()">Load Draft</button>
 <button onclick="forcePick()">Force Pick</button>
-  
+
 <br><br>
 
 Draft Timer: <span id="timer">60</span>
 
 <div id="layout">
 
+<!-- PLAYERS -->
 <div>
-<h3>Players</h3>
+<h3 onclick="toggleSection('playersSection')">Players ▼</h3>
+<div id="playersSection">
 
 <button onclick="setFilter('ALL')">All</button>
 <button onclick="setFilter('QB')">QB</button>
@@ -137,21 +119,31 @@ Draft Timer: <span id="timer">60</span>
 <br><br>
 
 <input id="search" placeholder="Search...">
-
 <div id="players"></div>
+
+</div>
 </div>
 
+<!-- BOARD -->
 <div>
-<h3>Draft Board</h3>
+<h3 onclick="toggleSection('boardSection')">Draft Board ▼</h3>
+<div id="boardSection">
 <div id="board"></div>
 </div>
+</div>
 
+<!-- HISTORY + ROSTERS -->
 <div>
-<h3>History</h3>
-<div id="history"></div>
 
-<h3>Rosters</h3>
+<h3 onclick="toggleSection('historySection')">History ▼</h3>
+<div id="historySection">
+<div id="history"></div>
+</div>
+
+<h3 onclick="toggleSection('rostersSection')">Rosters ▼</h3>
+<div id="rostersSection">
 <div id="rosters"></div>
+</div>
 
 </div>
 
@@ -165,36 +157,23 @@ const socket = io()
 let state = {}
 let positionFilter = "ALL"
 
-/* ✅ POSITION LIMITS */
-const POSITION_LIMITS = {
-  QB: 1,
-  RB: 2,
-  WR: 2,
-  TE: 1,
-  "TE/WR": 1,
-  Oline: 1,
-
-  LE: 1,
-  RE: 1,
-  RNT: 1,
-
-  LILB: 1,
-  RILB: 1,
-  LOLB: 1,
-  ROLB: 1,
-
-  FS: 1,
-  SS: 1,
-  LCB: 1,
-  RCB: 1,
-
-  P: 1,
-  K: 1
+/* ✅ toggle */
+window.toggleSection = function(id){
+  let el = document.getElementById(id)
+  if(!el) return
+  el.style.display = el.style.display === "none" ? "block" : "none"
 }
 
-document.getElementById("search").addEventListener("input", () => {
-  render()
-})
+/* POSITION LIMITS */
+const POSITION_LIMITS = {
+  QB: 1,RB: 2,WR: 2,TE: 1,"TE/WR": 1,Oline: 1,
+  LE: 1,RE: 1,RNT: 1,
+  LILB: 1,RILB: 1,LOLB: 1,ROLB: 1,
+  FS: 1,SS: 1,LCB: 1,RCB: 1,
+  P: 1,K: 1
+}
+
+document.getElementById("search").addEventListener("input", render)
 
 window.saveDraft = function(){
   localStorage.setItem("draftState", JSON.stringify(state))
@@ -239,7 +218,6 @@ fetch("/players.json")
   return r.json()
 })
 .then(data=>{
-
   let input = prompt("Enter draft users")
   if(!input) return
 
@@ -250,7 +228,6 @@ fetch("/players.json")
     players: data.players,
     nflTeams: data.teams || []
   })
-
 })
 .catch(err=>{
   console.error(err)
@@ -314,8 +291,7 @@ window.exportCSV = function(){
   URL.revokeObjectURL(url)
 }
 
-/* ---------- RENDER ---------- */
-
+/* RENDER (unchanged) */
 function render(){
 
 let list=document.getElementById("players")
@@ -326,12 +302,10 @@ let query=document.getElementById("search").value.toLowerCase().trim()
 if(positionFilter==="TEAMS"){
 (state.nflTeams||[]).forEach(t=>{
 if(!t.name.toLowerCase().includes(query)) return
-
 let d=document.createElement("div")
 d.className="player"
 d.style.background="#fff3b0"
 d.innerText=t.name
-
 d.onclick=()=>socket.emit("draft", t.name)
 list.appendChild(d)
 })
@@ -339,7 +313,6 @@ return
 }
 
 (state.players||[]).forEach(p=>{
-
 if(positionFilter!=="ALL"){
   if(Array.isArray(positionFilter)){
     if(!positionFilter.includes(p.position)) return
@@ -349,19 +322,14 @@ if(positionFilter!=="ALL"){
 }
 
 let name=p.name.toLowerCase()
-
 if(query && !name.includes(query) && !name.split(" ").some(n=>n.includes(query))) return
-
 if(state.drafted?.includes(p.name)) return
 
 let d=document.createElement("div")
 d.className="player "+p.position.toLowerCase()
 d.innerText=p.name+" ("+p.position+")"
-
 d.onclick=()=>socket.emit("draft", p.name)
-
 list.appendChild(d)
-
 })
 
 let board=document.getElementById("board")
@@ -414,7 +382,6 @@ row.appendChild(cell)
 for(let i=0;i<cols;i++){
 let idx=r*cols+i
 if(!picks[idx]) continue
-
 let teamIndex=order[idx]
 cells[teamIndex].innerText=picks[idx]
 }
@@ -432,40 +399,35 @@ row.innerText=(i+1)+". "+team+" → "+p
 history.appendChild(row)
 })
 
-/* ✅ ROSTERS WITH LIMITS + RED WARNING */
-let rosterDiv = document.getElementById("rosters")
-rosterDiv.innerHTML = ""
+let rosterDiv=document.getElementById("rosters")
+rosterDiv.innerHTML=""
 
-let rosters = state.rosters || []
+let rosters=state.rosters||[]
 
-rosters.forEach((r, i)=>{
+rosters.forEach((r,i)=>{
+let box=document.createElement("div")
+box.style.borderBottom="1px solid #ccc"
+box.style.padding="6px"
 
-  let box = document.createElement("div")
-  box.style.borderBottom = "1px solid #ccc"
-  box.style.padding = "6px"
+let title=document.createElement("div")
+title.innerText=teams[i]
+title.style.fontWeight="bold"
+box.appendChild(title)
 
-  let title = document.createElement("div")
-  title.innerText = teams[i]
-  title.style.fontWeight = "bold"
+Object.keys(r).forEach(pos=>{
+let row=document.createElement("div")
+let limit=POSITION_LIMITS[pos]||"-"
+row.innerText=pos+": "+r[pos]+" / "+limit
 
-  box.appendChild(title)
+if(limit!=="-" && r[pos]>limit){
+  row.style.color="red"
+  row.style.fontWeight="bold"
+}
 
-  Object.keys(r).forEach(pos=>{
+box.appendChild(row)
+})
 
-    let row = document.createElement("div")
-
-    let limit = POSITION_LIMITS[pos] || "-"
-    row.innerText = pos + ": " + r[pos] + " / " + limit
-
-    if(limit !== "-" && r[pos] > limit){
-      row.style.color = "red"
-      row.style.fontWeight = "bold"
-    }
-
-    box.appendChild(row)
-  })
-
-  rosterDiv.appendChild(box)
+rosterDiv.appendChild(box)
 })
 
 }
